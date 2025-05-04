@@ -34,7 +34,7 @@
         />
       </div>
 
-      <!-- Mint button -->
+      <!-- Mint button (plays sound then redirects) -->
       <button
         id="mint-btn"
         class="inline-block bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-full transition duration-200"
@@ -63,21 +63,17 @@
       </div>
     </footer>
 
-    <!-- Script: open tab then redirect after play -->
+    <!-- Script: play fart sound then redirect current tab -->
     <script>
       const btn = document.getElementById('mint-btn');
       const fartSound = document.getElementById('fart-sound');
       btn.addEventListener('click', e => {
         e.preventDefault();
-        // Open blank tab immediately on user gesture
-        const newWindow = window.open('', '_blank', 'noopener');
-        // Play sound
         fartSound.currentTime = 0;
-        fartSound.play().catch(() => {})
-          .finally(() => {
-            // After attempting playback, navigate to Dexscreener
-            newWindow.location = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
-          });
+        fartSound.play();
+        fartSound.onended = () => {
+          window.location.href = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
+        };
       });
     </script>
   </body>

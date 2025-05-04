@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="flex flex-col min-h-screen items-center justify-center text-center p-4">
-    <!-- Fart sound audio element (ensure this file is in your public folder) -->
+    <!-- Fart sound audio element -->
     <audio id="fart-sound" src="/fart.mp3" preload="auto"></audio>
 
     <header class="mb-8">
@@ -34,14 +34,13 @@
         />
       </div>
 
-      <!-- Mint button: intercept click to play sound before opening link -->
-      <a
+      <!-- Mint button -->
+      <button
         id="mint-btn"
-        href="https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt"
         class="inline-block bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-full transition duration-200"
       >
         MINT A FART 💨
-      </a>
+      </button>
     </main>
 
     <footer class="mt-12 text-sm opacity-70">
@@ -64,16 +63,21 @@
       </div>
     </footer>
 
-    <!-- Sound trigger script: prevent default, play, then open -->
+    <!-- Script: open tab then redirect after play -->
     <script>
       const btn = document.getElementById('mint-btn');
       const fartSound = document.getElementById('fart-sound');
       btn.addEventListener('click', e => {
         e.preventDefault();
+        // Open blank tab immediately on user gesture
+        const newWindow = window.open('', '_blank', 'noopener');
+        // Play sound
         fartSound.currentTime = 0;
-        fartSound.play().finally(() => {
-          window.open(btn.href, '_blank', 'noopener');
-        });
+        fartSound.play().catch(() => {})
+          .finally(() => {
+            // After attempting playback, navigate to Dexscreener
+            newWindow.location = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
+          });
       });
     </script>
   </body>

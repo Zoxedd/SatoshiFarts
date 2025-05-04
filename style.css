@@ -1,0 +1,56 @@
+/* style.css */
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  background-color: #000;
+  color: #0f0;
+}
+
+@keyframes fart {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100px, -50px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.fart-cloud {
+  animation: fart 2s infinite;
+  position: absolute;
+  bottom: 4rem;
+  left: 6rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: #22c55e;
+  border-radius: 9999px;
+  filter: blur(4px);
+  opacity: 0.8;
+}
+
+.fart-cloud::before,
+.fart-cloud::after {
+  content: "";
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  background-color: #22c55e;
+  border-radius: 9999px;
+  filter: blur(4px);
+  opacity: 0.8;
+  animation: fart 2s infinite;
+}
+
+.fart-cloud::before {
+  animation-delay: 0.5s;
+  bottom: 0.5rem;
+  left: -1.5rem;
+}
+
+.fart-cloud::after {
+  animation-delay: 1s;
+  bottom: -1rem;
+  left: -0.5rem;
+}

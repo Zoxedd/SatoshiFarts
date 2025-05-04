@@ -13,13 +13,15 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
-    <!-- Jupiter swap UI removed -->
   </head>
   <body class="flex flex-col min-h-screen items-center justify-center text-center p-4">
+    <!-- Fart sound audio element -->
+    <audio id="fart-sound" src="fart.mp3" preload="auto"></audio>
+
     <header class="mb-8">
       <h1 class="text-4xl md:text-5xl mb-4">SATOSHI'S FART</h1>
       <p class="text-lg md:text-xl">
-        Decentralized flatulence. Gas has never been so expensive.
+        First Gas Fee Ever Created
       </p>
     </header>
 
@@ -30,10 +32,11 @@
           alt="Satoshi's Fart"
           class="max-w-full h-auto rounded-xl border-4 border-green-400 shadow-lg mb-8"
         />
-        <!-- bubble removed -->
       </div>
 
+      <!-- Mint button with click-to-play sound -->
       <a
+        id="mint-btn"
         href="https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt"
         target="_blank" rel="noopener noreferrer"
         class="inline-block bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-full transition duration-200"
@@ -61,5 +64,14 @@
         </a>
       </div>
     </footer>
+
+    <!-- Sound trigger script -->
+    <script>
+      const fartSound = document.getElementById('fart-sound');
+      document.getElementById('mint-btn').addEventListener('click', () => {
+        fartSound.currentTime = 0;
+        fartSound.play();
+      });
+    </script>
   </body>
 </html>

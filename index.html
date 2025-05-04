@@ -14,7 +14,31 @@
     />
     <link rel="stylesheet" href="style.css" />
     <style>
-      /* Intro title card */
+      /* Mobile-first responsive adjustments */
+      .intro-text { font-size: 1rem; padding: 0 1rem; }
+      .crawl-container { height: 50vh; }
+      .crawl {
+        left: 0;
+        width: 100%;
+        padding: 0 0.5rem;
+      }
+      .crawl p { margin: 0 0.5rem 1rem; font-size: 0.875rem; line-height: 1.4; }
+      header h1 { font-size: 1.75rem; }
+      header p { font-size: 0.875rem; }
+      iframe.jup-swap { height: 250px; }
+      button#mint-btn { width: 100%; font-size: 0.875rem; padding: 0.75rem; }
+      /* Larger screens */
+      @media (min-width: 640px) {
+        .intro-text { font-size: 2rem; }
+        .crawl-container { height: 60vh; }
+        .crawl { left: -5%; width: 110%; padding: 0 1rem; }
+        .crawl p { margin: 0 1rem 1.5rem; font-size: 1rem; }
+        header h1 { font-size: 2.5rem; }
+        header p { font-size: 1.125rem; }
+        iframe.jup-swap { height: 600px; }
+        button#mint-btn { width: auto; font-size: 1rem; padding: 0.75rem 1.5rem; }
+      }
+      /* Fond intro overlay and crawl styles */
       .intro-container {
         position: fixed;
         top: 0;
@@ -35,13 +59,10 @@
       .intro-text {
         color: #39ff14;
         font-family: 'Press Start 2P', monospace;
-        font-size: 2rem;
         text-align: center;
       }
-      /* Star Wars–style crawl */
       .crawl-container {
         position: relative;
-        height: 60vh;
         overflow: hidden;
         perspective: 400px;
         margin-bottom: 2rem;
@@ -49,27 +70,19 @@
       .crawl {
         position: absolute;
         bottom: 0;
-        left: -5%;              /* shifted slightly to the right to avoid clipping */
-        width: 110%;             /* adjust width accordingly */             
         transform-origin: 50% 100%;
         font-family: 'Press Start 2P', monospace;
         color: #39ff14;
         animation: crawl 35s ease-in-out infinite;
-        animation-play-state: paused; /* start paused until intro ends */
+        animation-play-state: paused;
         cursor: pointer;
-        padding: 0 1rem;         /* breathing room on sides */
       }
       .crawl.paused { animation-play-state: paused; }
       .crawl.running { animation-play-state: running; }
       @keyframes crawl {
-        0% {
-          transform: rotateX(25deg) translateZ(0) translateY(100%);
-        }
-        100% {
-          transform: rotateX(25deg) translateZ(-250px) translateY(-300%);
-        }
+        0% { transform: rotateX(25deg) translateZ(0) translateY(100%); }
+        100% { transform: rotateX(25deg) translateZ(-250px) translateY(-300%); }
       }
-      .crawl p { margin: 0 1rem 1.5rem; }
     </style>
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
@@ -81,10 +94,8 @@
     <audio id="fart-sound" src="/fart.mp3" preload="auto"></audio>
 
     <header class="w-full mb-8 text-center">
-      <h1 class="text-5xl mb-2">SATOSHI'S FART</h1>
-      <p class="text-xl">
-        Decentralized flatulence. Gas has never been so expensive.
-      </p>
+      <h1 class="mb-2">SATOSHI'S FART</h1>
+      <p>Decentralized flatulence. Gas has never been so expensive.</p>
     </header>
 
     <!-- Scrolling lore -->
@@ -101,13 +112,13 @@
         <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto max-w-full h-auto rounded-xl shadow-lg" />
       </div>
 
-      <button id="mint-btn" class="bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-full transition duration-200 mb-12">
+      <button id="mint-btn" class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-12">
         MINT A FART 💨
       </button>
 
       <section id="swap-widget" class="w-full max-w-screen-lg mx-auto">
-        <h2 class="text-2xl mb-4 text-center">Swap SOL for Satoshi's Fart Token</h2>
-        <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
+        <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart Token</h2>
+        <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" frameborder="0" allowfullscreen></iframe>
       </section>
     </main>
 
@@ -120,7 +131,6 @@
     </footer>
 
     <script>
-      // After intro animation ends, start crawl
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
       intro.addEventListener('animationend', () => {
@@ -128,8 +138,6 @@
         crawl.classList.remove('paused');
         crawl.classList.add('running');
       });
-
-      // Mint button handler with new window
       document.getElementById('mint-btn').addEventListener('click', e => {
         e.preventDefault();
         const sound = document.getElementById('fart-sound');
@@ -137,16 +145,8 @@
         sound.play();
         sound.onended = () => window.open('https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt', '_blank');
       });
-
-      // Pause/resume crawl on click
       crawl.addEventListener('click', () => {
-        if (crawl.classList.contains('running')) {
-          crawl.classList.remove('running');
-          crawl.classList.add('paused');
-        } else {
-          crawl.classList.remove('paused');
-          crawl.classList.add('running');
-        }
+        crawl.classList.toggle('running');
       });
     </script>
   </body>

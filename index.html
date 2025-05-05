@@ -165,16 +165,26 @@
         crawl.classList.remove('paused');
         crawl.classList.add('running');
       });
+
       document.getElementById('mint-btn').addEventListener('click', e => {
         e.preventDefault();
         const sound = document.getElementById('fart-sound');
+        const dexUrl = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
+
+        // Open the new tab immediately (mobile-safe)
+        window.open(dexUrl, '_blank');
+
+        // Attempt to play sound
         sound.currentTime = 0;
-        sound.play();
-        sound.onended = () => window.open('https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt', '_blank');
+        sound.play().catch(err => {
+          console.warn('Sound playback blocked by browser:', err);
+        });
       });
+
       crawl.addEventListener('click', () => {
         crawl.classList.toggle('running');
       });
+
       document.getElementById('copyAddrBtn').addEventListener('click', () => {
         const addr = document.getElementById('donationAddr').innerText;
         navigator.clipboard.writeText(addr).then(() => {

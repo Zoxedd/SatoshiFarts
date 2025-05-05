@@ -120,13 +120,31 @@
         MINT A FART 💨
       </button>
 
-      <section id="swap-widget" class="w-full max-w-screen-lg mx-auto">
+      <section id="swap-widget" class="w-full max-w-screen-lg mx-auto mb-12">
         <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart</h2>
         <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" frameborder="0" allowfullscreen></iframe>
       </section>
+
+      <!-- Donate Section -->
+      <section id="donate" class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
+        <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
+        <p class="mb-4">Send SOL here to fuel our next push:</p>
+        <div class="flex items-center justify-center space-x-2 mb-4">
+          <code id="donationAddr" class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300">
+            9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
+          </code>
+          <button id="copyAddrBtn" class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded">
+            Copy
+          </button>
+        </div>
+        <a href="https://explorer.solana.com/address/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?cluster=mainnet"
+           target="_blank" rel="noopener noreferrer" class="underline text-green-400">
+          View on Solana Explorer
+        </a>
+      </section>
     </main>
 
-    <footer class="w-full mt-12 text-center text-sm opacity-70">
+    <footer class="w-full mt-0 text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
         <a href="https://x.com/Satoshis_Fart" target="_blank" rel="noopener noreferrer" class="hover:underline">X (Twitter)</a>
@@ -151,6 +169,12 @@
       });
       crawl.addEventListener('click', () => {
         crawl.classList.toggle('running');
+      });
+      document.getElementById('copyAddrBtn').addEventListener('click', () => {
+        const addr = document.getElementById('donationAddr').innerText;
+        navigator.clipboard.writeText(addr).then(() => {
+          alert('Address copied to clipboard!');
+        });
       });
     </script>
   </body>

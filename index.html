@@ -116,47 +116,67 @@
         <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto max-w-full h-auto rounded-xl shadow-lg" />
       </div>
 
-      <button id="mint-btn" class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-12">
+      <button id="mint-btn"
+              class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-8">
         MINT A FART 💨
+      </button>
+
+      <!-- NEW: Verify Holder button -->
+      <button id="verify-btn"
+              class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full transition duration-200 px-6 py-3 mb-12">
+        Verify Holder Access 🔑
       </button>
 
       <section id="swap-widget" class="w-full max-w-screen-lg mx-auto mb-12">
         <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart</h2>
-        <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" frameborder="0" allowfullscreen></iframe>
+        <iframe class="jup-swap w-full"
+                src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump"
+                frameborder="0" allowfullscreen>
+        </iframe>
       </section>
 
-<!-- Donate Section -->
-<section id="donate" class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
-  <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
-  <p class="mb-4">Send SOL here to fuel our next push:</p>
-  <div class="flex items-center justify-center space-x-2 mb-4">
-    <code id="donationAddr" class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300">
-      9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
-    </code>
-    <button id="copyAddrBtn" class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded">
-      Copy
-    </button>
-  </div>
-  <a
-    href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="underline text-green-400"
-  >
-    View on Solscan
-  </a>
-</section>
-
+      <!-- Donate Section -->
+      <section id="donate"
+               class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
+        <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
+        <p class="mb-4">Send SOL here to fuel our next push:</p>
+        <div class="flex items-center justify-center space-x-2 mb-4">
+          <code id="donationAddr"
+                class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300">
+            9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
+          </code>
+          <button id="copyAddrBtn"
+                  class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded">
+            Copy
+          </button>
+        </div>
+        <a href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers"
+           target="_blank" rel="noopener noreferrer"
+           class="underline text-green-400">
+          View on Solscan
+        </a>
+      </section>
     </main>
 
     <footer class="w-full mt-0 text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
-        <a href="https://x.com/NoveskeBoiiii" target="_blank" rel="noopener noreferrer" class="hover:underline">X (Twitter)</a>
-        <a href="https://t.me/SatoshiFart" target="_blank" rel="noopener noreferrer" class="hover:underline">Telegram</a>
+        <a href="https://x.com/NoveskeBoiiii"
+           target="_blank" rel="noopener noreferrer"
+           class="hover:underline">X (Twitter)</a>
+
+        <!-- hidden until holder verified -->
+        <div id="tg-holders-only" style="display:none; display:inline-block;">
+          <a href="https://t.me/SatoshiFart"
+             target="_blank" rel="noopener noreferrer"
+             class="hover:underline">
+            Telegram (Holders Only)
+          </a>
+        </div>
       </div>
     </footer>
 
+    <!-- existing scripts -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
@@ -190,6 +210,47 @@
         navigator.clipboard.writeText(addr).then(() => {
           alert('Address copied to clipboard!');
         });
+      });
+    </script>
+
+    <!-- NEW: Solana wallet & token-check script -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script>
+      const TOKEN_MINT = "FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump";
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl('mainnet-beta')
+      );
+
+      document.getElementById('verify-btn').addEventListener('click', async () => {
+        if (!window.solana?.isPhantom) {
+          return alert('Please install Phantom Wallet to verify.');
+        }
+
+        // 1) Connect wallet
+        const { publicKey } = await window.solana.connect();
+
+        // 2) Fetch token accounts
+        const resp = await connection.getParsedTokenAccountsByOwner(
+          publicKey,
+          {
+            programId: new solanaWeb3.PublicKey(
+              "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+            )
+          }
+        );
+
+        // 3) Check for your mint
+        const hasToken = resp.value.some(acc => {
+          const info = acc.account.data.parsed.info;
+          return info.mint === TOKEN_MINT && +info.tokenAmount.amount > 0;
+        });
+
+        if (hasToken) {
+          document.getElementById('tg-holders-only').style.display = 'inline-block';
+          alert('✅ Verified! Telegram link is now visible.');
+        } else {
+          alert('🚫 You need to hold at least 1 Satoshi’s Fart to join.');
+        }
       });
     </script>
   </body>

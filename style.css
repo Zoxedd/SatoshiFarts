@@ -54,3 +54,15 @@ body {
   bottom: -1rem;
   left: -0.5rem;
 }
+
+
+/* === Added Holder Verification Button Styles === */
+
+#verify-btn {
+  background: #004400;
+  color: #39ff14;
+}
+
+#verify-btn:hover {
+  background: #006600;
+}

@@ -28,6 +28,7 @@
         iframe.jup-swap { height: 600px; }
         button#mint-btn { width: auto; font-size: 1rem; padding: 0.75rem 1.5rem; }
       }
+      /* Intro overlay and crawl styles */
       .intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; animation: introFade 4s ease-out forwards; }
       @keyframes introFade { 0%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
       .intro-text { color: #39ff14; font-family: 'Press Start 2P', monospace; text-align: center; }
@@ -162,27 +163,31 @@
         const verifyBtn = document.getElementById('verify-btn');
         const tgDiv = document.getElementById('tg-holders-only');
         const tgLink = tgDiv.querySelector('a');
+        let provider;
+
+        // Disconnect on page unload to force fresh connect
+        window.addEventListener('beforeunload', async () => {
+          if (provider && provider.isConnected) {
+            try { await provider.disconnect(); } catch {}; }
+        });
 
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-          // Detect any main Solana wallet provider
-          let provider = null;
+          // Detect provider
           if (window.solana && window.solana.isPhantom) provider = window.solana;
           else if (window.solflare && window.solflare.isSolflare) provider = window.solflare;
           else if (window.slope) provider = window.slope;
           else if (window.sollet) provider = window.sollet;
-          else if (window.solana) provider = window.solana; // generic fallback
+          else if (window.solana) provider = window.solana;
 
           if (!provider) {
             if (isMobile) {
-              // Deep-link to Phantom as default
-              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(window.location.href)}`;
+              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(location.href)}`;
             } else {
-              alert('Please install a Solana wallet (Phantom, Solflare, Slope, Sollet, etc.)');
+              return alert('Please install a Solana wallet.');
             }
-            return;
           }
 
           try {
@@ -193,17 +198,23 @@
           }
           const userKey = provider.publicKey;
 
-          // Check token balance
+          // Balance check
           const parsed = await connection.getParsedTokenAccountsByOwner(userKey, { programId: solanaWeb3.TOKEN_PROGRAM_ID });
-          const hasToken = parsed.value.some(acc => acc.account.data.parsed.info.mint === TOKEN_MINT.toString() && acc.account.data.parsed.info.tokenAmount.uiAmount > 0);
+          const hasToken = parsed.value.some(acc => acc.account.data.parsed.info.mint === TOKEN_MINT.toString()
+                                 && acc.account.data.parsed.info.tokenAmount.uiAmount > 0);
           if (!hasToken) return alert('🚫 You need at least 1 token.');
 
-          // Fetch one-time invite and redirect
+          // Fetch invite
           try {
             const res = await fetch('/api/get-tg-link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wallet: userKey.toString() }) });
             const json = await res.json();
-            if (json.inviteLink) window.location.href = json.inviteLink;
-            else alert(json.error || 'Couldn’t get invite link 😢');
+            if (json.inviteLink) {
+              tgLink.href = json.inviteLink;
+              tgDiv.style.display = 'inline-block';
+              alert('✅ Verified! Click the Telegram link to join.');
+            } else {
+              alert(json.error || 'Couldn’t get invite link 😢');
+            }
           } catch (err) {
             console.error(err);
             alert('Failed to fetch invite link.');

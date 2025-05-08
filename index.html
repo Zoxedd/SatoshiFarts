@@ -125,6 +125,7 @@
       </div>
     </footer>
 
+    <!-- existing UI scripts -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
@@ -140,76 +141,72 @@
         const dexUrl = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
         window.open(dexUrl, '_blank');
         sound.currentTime = 0;
-        sound.play().catch(err => { console.warn('Sound blocked', err); });
+        sound.play().catch(err => console.warn('Sound blocked', err));
       });
 
-      crawl.addEventListener('click', () => { crawl.classList.toggle('running'); });
+      crawl.addEventListener('click', () => crawl.classList.toggle('running'));
 
       document.getElementById('copyAddrBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(
-          document.getElementById('donationAddr').innerText
-        ).then(() => { alert('Address copied!'); });
+        navigator.clipboard.writeText(document.getElementById('donationAddr').innerText)
+          .then(() => alert('Address copied!'));
       });
     </script>
 
+    <!-- wallet and verification logic -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
     <script>
       (async () => {
         const TOKEN_MINT = new solanaWeb3.PublicKey('FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump');
-        const connection = new solanaWeb3.Connection(
-          solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed'
-        );
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
         const verifyBtn = document.getElementById('verify-btn');
-        const tgDiv    = document.getElementById('tg-holders-only');
-        const tgLink   = tgDiv.querySelector('a');
+        const tgDiv = document.getElementById('tg-holders-only');
+        const tgLink = tgDiv.querySelector('a');
 
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
-          if (!window.solana) {
-            return alert('Please install a Solana wallet extension (Phantom, Solflare, etc.)');
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+          // Detect any main Solana wallet provider
+          let provider = null;
+          if (window.solana && window.solana.isPhantom) provider = window.solana;
+          else if (window.solflare && window.solflare.isSolflare) provider = window.solflare;
+          else if (window.slope) provider = window.slope;
+          else if (window.sollet) provider = window.sollet;
+          else if (window.solana) provider = window.solana; // generic fallback
+
+          if (!provider) {
+            if (isMobile) {
+              // Deep-link to Phantom as default
+              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(window.location.href)}`;
+            } else {
+              alert('Please install a Solana wallet (Phantom, Solflare, Slope, Sollet, etc.)');
+            }
+            return;
           }
 
-          let userKey;
           try {
-            if (window.solana.isConnected) {
-              await window.solana.disconnect();
-            }
-            const resp = await window.solana.connect();
-            userKey = resp.publicKey;
+            if (provider.isConnected) await provider.disconnect();
+            await provider.connect();
           } catch {
             return alert('Wallet connection rejected.');
           }
+          const userKey = provider.publicKey;
 
-          const parsed = await connection.getParsedTokenAccountsByOwner(
-            userKey, { programId: solanaWeb3.TOKEN_PROGRAM_ID }
-          );
+          // Check token balance
+          const parsed = await connection.getParsedTokenAccountsByOwner(userKey, { programId: solanaWeb3.TOKEN_PROGRAM_ID });
+          const hasToken = parsed.value.some(acc => acc.account.data.parsed.info.mint === TOKEN_MINT.toString() && acc.account.data.parsed.info.tokenAmount.uiAmount > 0);
+          if (!hasToken) return alert('🚫 You need at least 1 token.');
 
-          const hasToken = parsed.value.some(acc => {
-            const info = acc.account.data.parsed.info;
-            return info.mint === TOKEN_MINT.toString()
-                   && +info.tokenAmount.uiAmount > 0;
-          });
-
-          if (!hasToken) {
-            return alert('🚫 You need at least 1 token.');
-          }
-
-          let json;
+          // Fetch one-time invite and redirect
           try {
-            const res = await fetch('/api/get-tg-link', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ wallet: userKey.toString() })
-            });
-            json = await res.json();
-          } catch {
-            return alert('Failed to fetch invite link.');
-          }
-
-          if (json.inviteLink) {
-            window.location.href = json.inviteLink;
-          } else {
-            alert(json.error || 'Couldn’t get invite link 😢');
+            const res = await fetch('/api/get-tg-link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wallet: userKey.toString() }) });
+            const json = await res.json();
+            if (json.inviteLink) window.location.href = json.inviteLink;
+            else alert(json.error || 'Couldn’t get invite link 😢');
+          } catch (err) {
+            console.error(err);
+            alert('Failed to fetch invite link.');
           }
         });
       })();

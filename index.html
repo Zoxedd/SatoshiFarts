@@ -278,12 +278,10 @@
               return;
             }
 
-            // connect wallet
-            if (provider.isConnected) await provider.disconnect();
-            await provider.connect();
-            const userKey = provider.publicKey;
-            console.log('Wallet connected:', userKey.toString());
-            alert('Wallet connected: ' + userKey.toString());
+            // connect wallet and grab publicKey from response
+            const { publicKey: userKey } = await provider.connect();
+            console.log('Wallet connected:', userKey.toBase58());
+            alert('Wallet connected: ' + userKey.toBase58());
 
             // fetch token accounts
             let parsed;

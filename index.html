@@ -138,17 +138,17 @@
         e.preventDefault();
         const sound = document.getElementById('fart-sound');
         const dexUrl = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
-
         window.open(dexUrl, '_blank');
         sound.currentTime = 0;
-        sound.play().catch(err => { console.warn('Sound playback blocked', err); });
+        sound.play().catch(err => { console.warn('Sound blocked', err); });
       });
 
       crawl.addEventListener('click', () => { crawl.classList.toggle('running'); });
 
       document.getElementById('copyAddrBtn').addEventListener('click', () => {
-        const addr = document.getElementById('donationAddr').innerText;
-        navigator.clipboard.writeText(addr).then(() => { alert('Address copied!'); });
+        navigator.clipboard.writeText(
+          document.getElementById('donationAddr').innerText
+        ).then(() => { alert('Address copied!'); });
       });
     </script>
 
@@ -166,11 +166,20 @@
 
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
-          if (!window.solana?.isPhantom) return alert('Install Phantom Wallet');
-          let resp;
-          try { resp = await window.solana.connect(); }
-          catch { return alert('Wallet connection rejected.'); }
-          const userKey = resp.publicKey;
+          if (!window.solana) {
+            return alert('Please install a Solana wallet extension (Phantom, Solflare, etc.)');
+          }
+
+          let userKey;
+          try {
+            if (window.solana.isConnected) {
+              await window.solana.disconnect();
+            }
+            const resp = await window.solana.connect();
+            userKey = resp.publicKey;
+          } catch {
+            return alert('Wallet connection rejected.');
+          }
 
           const parsed = await connection.getParsedTokenAccountsByOwner(
             userKey, { programId: solanaWeb3.TOKEN_PROGRAM_ID }
@@ -182,20 +191,26 @@
                    && +info.tokenAmount.uiAmount > 0;
           });
 
-          if (!hasToken) return alert('🚫 You need at least 1 token.');
+          if (!hasToken) {
+            return alert('🚫 You need at least 1 token.');
+          }
 
           let json;
           try {
             const res = await fetch('/api/get-tg-link', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ wallet: userKey.toString() })
-            }); json = await res.json();
+            });
+            json = await res.json();
           } catch {
             return alert('Failed to fetch invite link.');
           }
 
-          if (json.inviteLink) window.location.href = json.inviteLink;
-          else alert(json.error || 'Couldn’t get invite link 😢');
+          if (json.inviteLink) {
+            window.location.href = json.inviteLink;
+          } else {
+            alert(json.error || 'Couldn’t get invite link 😢');
+          }
         });
       })();
     </script>

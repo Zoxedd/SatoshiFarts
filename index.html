@@ -4,8 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Satoshi's Fart</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
     <style>
       /* Mobile-first responsive adjustments */
@@ -28,21 +34,54 @@
         iframe.jup-swap { height: 600px; }
         button#mint-btn { width: auto; font-size: 1rem; padding: 0.75rem 1.5rem; }
       }
-      /* Intro overlay and crawl styles */
-      .intro-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 1000; animation: introFade 4s ease-out forwards; }
-      @keyframes introFade { 0%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
-      .intro-text { color: #39ff14; font-family: 'Press Start 2P', monospace; text-align: center; }
-      .crawl-container { position: relative; overflow: hidden; perspective: 400px; margin-bottom: 2rem; }
-      .crawl { position: absolute; bottom: 0; transform-origin: 50% 100%; font-family: 'Press Start 2P', monospace; color: #39ff14; animation: crawl 35s ease-in-out infinite; animation-play-state: paused; cursor: pointer; }
+      .intro-container {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: introFade 4s ease-out forwards;
+      }
+      @keyframes introFade {
+        0%, 80% { opacity: 1; }
+        100%   { opacity: 0; visibility: hidden; }
+      }
+      .intro-text {
+        color: #39ff14;
+        font-family: 'Press Start 2P', monospace;
+        text-align: center;
+      }
+      .crawl-container {
+        position: relative;
+        overflow: hidden;
+        perspective: 400px;
+        margin-bottom: 2rem;
+      }
+      .crawl {
+        position: absolute;
+        bottom: 0;
+        transform-origin: 50% 100%;
+        font-family: 'Press Start 2P', monospace;
+        color: #39ff14;
+        animation: crawl 35s ease-in-out infinite;
+        animation-play-state: paused;
+        cursor: pointer;
+      }
       .crawl.paused { animation-play-state: paused; }
       .crawl.running { animation-play-state: running; }
-      @keyframes crawl { 0% { transform: rotateX(25deg) translateZ(0) translateY(100%); } 100% { transform: rotateX(25deg) translateZ(-250px) translateY(-300%); } }
+      @keyframes crawl {
+        0%   { transform: rotateX(25deg) translateZ(0) translateY(100%); }
+        100% { transform: rotateX(25deg) translateZ(-250px) translateY(-300%); }
+      }
     </style>
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
     <div id="introOverlay" class="intro-container">
-      <div class="intro-text">The Original Gas Fee...</div>
+      <div class="intro-text">The Original Gas Fee.</div>
     </div>
 
     <audio id="fart-sound" src="/fart.mp3" preload="auto"></audio>
@@ -63,46 +102,65 @@
 
     <main class="flex flex-col items-center w-full px-4">
       <div class="w-full mb-8">
-        <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto max-w-full h-auto rounded-xl shadow-lg" />
+        <img
+          src="/SatoshiFarts.png"
+          alt="Satoshi's Fart"
+          class="mx-auto max-w-full h-auto rounded-xl shadow-lg"
+        />
       </div>
 
-      <button id="mint-btn"
-              class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-8">
+      <button
+        id="mint-btn"
+        class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-8"
+      >
         MINT A FART 💨
       </button>
 
       <!-- NEW: Verify Holder button -->
-      <button id="verify-btn"
-              class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full transition duration-200 px-6 py-3 mb-12">
+      <button
+        id="verify-btn"
+        class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full transition duration-200 px-6 py-3 mb-12"
+      >
         Verify Holder Access 🔑
       </button>
 
       <section id="swap-widget" class="w-full max-w-screen-lg mx-auto mb-12">
         <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart</h2>
-        <iframe class="jup-swap w-full"
-                src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump"
-                frameborder="0" allowfullscreen>
-        </iframe>
+        <iframe
+          class="jup-swap w-full"
+          src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
       </section>
 
       <!-- Donate Section -->
-      <section id="donate"
-               class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
+      <section
+        id="donate"
+        class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center"
+      >
         <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
         <p class="mb-4">Send SOL here to fuel our next push:</p>
         <div class="flex items-center justify-center space-x-2 mb-4">
-          <code id="donationAddr"
-                class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300">
+          <code
+            id="donationAddr"
+            class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300"
+          >
             9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
           </code>
-          <button id="copyAddrBtn"
-                  class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded">
+          <button
+            id="copyAddrBtn"
+            class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
+          >
             Copy
           </button>
         </div>
-        <a href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers"
-           target="_blank" rel="noopener noreferrer"
-           class="underline text-green-400">
+        <a
+          href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline text-green-400"
+        >
           View on Solscan
         </a>
       </section>
@@ -111,15 +169,24 @@
     <footer class="w-full mt-0 text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
-        <a href="https://x.com/NoveskeBoiiii"
-           target="_blank" rel="noopener noreferrer"
-           class="hover:underline">X (Twitter)</a>
+        <a
+          href="https://x.com/NoveskeBoiiii"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:underline"
+        >
+          X (Twitter)
+        </a>
 
         <!-- hidden until holder verified -->
-        <div id="tg-holders-only" style="display:none; display:inline-block;">
-          <a href="https://t.me/+OK3C9ZPdY3RiYjcx"
-             target="_blank" rel="noopener noreferrer"
-             class="hover:underline">
+        <div id="tg-holders-only" style="display:none;">
+          <a
+            id="tg-invite-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:underline"
+          >
             Telegram (Holders Only)
           </a>
         </div>
@@ -139,7 +206,8 @@
       document.getElementById('mint-btn').addEventListener('click', e => {
         e.preventDefault();
         const sound = document.getElementById('fart-sound');
-        const dexUrl = 'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
+        const dexUrl =
+          'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
         window.open(dexUrl, '_blank');
         sound.currentTime = 0;
         sound.play().catch(err => console.warn('Sound blocked', err));
@@ -148,7 +216,8 @@
       crawl.addEventListener('click', () => crawl.classList.toggle('running'));
 
       document.getElementById('copyAddrBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(document.getElementById('donationAddr').innerText)
+        navigator.clipboard
+          .writeText(document.getElementById('donationAddr').innerText)
           .then(() => alert('Address copied!'));
       });
     </script>
@@ -158,36 +227,52 @@
     <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
     <script>
       (async () => {
-        const TOKEN_MINT = new solanaWeb3.PublicKey('FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump');
-        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+        const TOKEN_MINT = new solanaWeb3.PublicKey(
+          'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump'
+        );
+        const connection = new solanaWeb3.Connection(
+          solanaWeb3.clusterApiUrl('mainnet-beta'),
+          'confirmed'
+        );
         const verifyBtn = document.getElementById('verify-btn');
         const tgDiv = document.getElementById('tg-holders-only');
-        const tgLink = tgDiv.querySelector('a');
+        const tgLink = document.getElementById('tg-invite-link');
         let provider;
 
-        // Disconnect on page unload to force fresh connect
-        window.addEventListener('beforeunload', async () => {
+        // ensure wallet disconnect on leave
+        function safeDisconnect() {
           if (provider && provider.isConnected) {
-            try { await provider.disconnect(); } catch {}; }
-        });
+            provider.disconnect().catch(() => {});
+          }
+        }
+        window.addEventListener('pagehide', safeDisconnect);
+        window.addEventListener('beforeunload', safeDisconnect);
 
-        verifyBtn.addEventListener('click', async (e) => {
+        verifyBtn.addEventListener('click', async e => {
           e.preventDefault();
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(
+            navigator.userAgent
+          );
 
-          // Detect provider
+          // detect Phantom, Solflare, Slope, Sollet, generic
           if (window.solana && window.solana.isPhantom) provider = window.solana;
-          else if (window.solflare && window.solflare.isSolflare) provider = window.solflare;
+          else if (window.solflare && window.solflare.isSolflare)
+            provider = window.solflare;
           else if (window.slope) provider = window.slope;
           else if (window.sollet) provider = window.sollet;
           else if (window.solana) provider = window.solana;
 
           if (!provider) {
             if (isMobile) {
-              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(location.href)}`;
+              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(
+                window.location.href
+              )}`;
             } else {
-              return alert('Please install a Solana wallet.');
+              alert(
+                'Please install a Solana wallet (Phantom, Solflare, Slope, Sollet, etc.)'
+              );
             }
+            return;
           }
 
           try {
@@ -198,27 +283,23 @@
           }
           const userKey = provider.publicKey;
 
-          // Balance check
-          const parsed = await connection.getParsedTokenAccountsByOwner(userKey, { programId: solanaWeb3.TOKEN_PROGRAM_ID });
-          const hasToken = parsed.value.some(acc => acc.account.data.parsed.info.mint === TOKEN_MINT.toString()
-                                 && acc.account.data.parsed.info.tokenAmount.uiAmount > 0);
+          // check token ownership
+          const parsed = await connection.getParsedTokenAccountsByOwner(
+            userKey,
+            { programId: solanaWeb3.TOKEN_PROGRAM_ID }
+          );
+          const hasToken = parsed.value.some(
+            acc =>
+              acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
+              acc.account.data.parsed.info.tokenAmount.uiAmount > 0
+          );
           if (!hasToken) return alert('🚫 You need at least 1 token.');
 
-          // Fetch invite
-          try {
-            const res = await fetch('/api/get-tg-link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ wallet: userKey.toString() }) });
-            const json = await res.json();
-            if (json.inviteLink) {
-              tgLink.href = json.inviteLink;
-              tgDiv.style.display = 'inline-block';
-              alert('✅ Verified! Click the Telegram link to join.');
-            } else {
-              alert(json.error || 'Couldn’t get invite link 😢');
-            }
-          } catch (err) {
-            console.error(err);
-            alert('Failed to fetch invite link.');
-          }
+          // reveal static TG invite link to verified holders only
+          const INVITE_LINK = 'https://t.me/your_verified_group';
+          verifyBtn.style.display = 'none';
+          tgLink.href = INVITE_LINK;
+          tgDiv.style.display = 'inline-block';
         });
       })();
     </script>

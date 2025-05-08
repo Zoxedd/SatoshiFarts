@@ -149,7 +149,7 @@
             9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
           </code>
           <button
-            id="copyAddrBtn"
+            id="#copyAddrBtn"
             class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
           >
             Copy
@@ -171,7 +171,7 @@
       <div class="mt-4 space-x-6">
         <a
           href="https://x.com/NoveskeBoiiii"
-          target="_blank"
+          target="#blank"
           rel="noopener noreferrer"
           class="hover:underline"
         >
@@ -183,7 +183,7 @@
           <a
             id="tg-invite-link"
             href="#"
-            target="_blank"
+            target="#blank"
             rel="noopener noreferrer"
             class="hover:underline"
           >
@@ -222,7 +222,7 @@
       });
     </script>
 
-    <!-- wallet and verification logic -->
+    <!-- wallet and verification logic with error handling -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
     <script>
@@ -239,7 +239,6 @@
         const tgLink = document.getElementById('tg-invite-link');
         let provider;
 
-        // ensure wallet disconnect on leave
         function safeDisconnect() {
           if (provider && provider.isConnected) {
             provider.disconnect().catch(() => {});
@@ -250,56 +249,78 @@
 
         verifyBtn.addEventListener('click', async e => {
           e.preventDefault();
-          const isMobile = /iPhone|iPad|iPod|Android/i.test(
-            navigator.userAgent
-          );
-
-          // detect Phantom, Solflare, Slope, Sollet, generic
-          if (window.solana && window.solana.isPhantom) provider = window.solana;
-          else if (window.solflare && window.solflare.isSolflare)
-            provider = window.solflare;
-          else if (window.slope) provider = window.slope;
-          else if (window.sollet) provider = window.sollet;
-          else if (window.solana) provider = window.solana;
-
-          if (!provider) {
-            if (isMobile) {
-              window.location.href = `https://phantom.app/ul/v1/connect?app_url=${encodeURIComponent(
-                window.location.href
-              )}`;
-            } else {
-              alert(
-                'Please install a Solana wallet (Phantom, Solflare, Slope, Sollet, etc.)'
-              );
-            }
-            return;
-          }
-
           try {
+            console.log('Starting holder verification...');
+
+            // detect wallet provider
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(
+              navigator.userAgent
+            );
+            if (window.solana && window.solana.isPhantom) {
+              provider = window.solana;
+              console.log('Detected Phantom provider');
+            } else if (window.solflare && window.solflare.isSolflare) {
+              provider = window.solflare;
+              console.log('Detected Solflare provider');
+            } else if (window.slope) {
+              provider = window.slope;
+              console.log('Detected Slope provider');
+            } else if (window.sollet) {
+              provider = window.sollet;
+              console.log('Detected Sollet provider');
+            } else if (window.solana) {
+              provider = window.solana;
+              console.log('Detected generic solana provider');
+            } else {
+              const msg = 'No Solana wallet found';
+              console.warn(msg);
+              alert(msg + '. Please install Phantom, Solflare, etc.');
+              return;
+            }
+
+            // connect wallet
             if (provider.isConnected) await provider.disconnect();
             await provider.connect();
-          } catch {
-            return alert('Wallet connection rejected.');
+            const userKey = provider.publicKey;
+            console.log('Wallet connected:', userKey.toString());
+            alert('Wallet connected: ' + userKey.toString());
+
+            // fetch token accounts
+            let parsed;
+            try {
+              parsed = await connection.getParsedTokenAccountsByOwner(
+                userKey,
+                { programId: solanaWeb3.TOKEN_PROGRAM_ID }
+              );
+              console.log('Token accounts fetched:', parsed);
+            } catch (fetchErr) {
+              console.error('Error fetching token accounts:', fetchErr);
+              alert('Error fetching token accounts: ' + fetchErr.message);
+              return;
+            }
+
+            // check token balance
+            const hasToken = parsed.value.some(
+              acc =>
+                acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
+                acc.account.data.parsed.info.tokenAmount.uiAmount > 0
+            );
+            console.log('Holder check result:', hasToken);
+            if (!hasToken) {
+              alert('🚫 You need at least 1 token.');
+              return;
+            }
+            alert('✅ Token verified! Revealing Telegram link.');
+
+            // reveal Telegram link
+            const INVITE_LINK = 'https://t.me/your_verified_group';
+            verifyBtn.style.display = 'none';
+            tgLink.href = INVITE_LINK;
+            tgDiv.style.display = 'inline-block';
+          } catch (err) {
+            console.error('Verification error:', err);
+            alert('Error during verification: ' + err.message);
           }
-          const userKey = provider.publicKey;
-
-          // check token ownership
-          const parsed = await connection.getParsedTokenAccountsByOwner(
-            userKey,
-            { programId: solanaWeb3.TOKEN_PROGRAM_ID }
-          );
-          const hasToken = parsed.value.some(
-            acc =>
-              acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
-              acc.account.data.parsed.info.tokenAmount.uiAmount > 0
-          );
-          if (!hasToken) return alert('🚫 You need at least 1 token.');
-
-          // reveal static TG invite link to verified holders only
-          const INVITE_LINK = 'https://t.me/your_verified_group';
-          verifyBtn.style.display = 'none';
-          tgLink.href = INVITE_LINK;
-          tgDiv.style.display = 'inline-block';
         });
       })();
     </script>

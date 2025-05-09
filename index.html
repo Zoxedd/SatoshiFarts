@@ -209,19 +209,30 @@
             }
 
             const userKey = response.publicKey;
-            alert('Wallet connected: ' + userKey.toBase58());
+            console.log('Wallet connected:', userKey.toBase58());
 
             // Fetch token accounts
             const parsed = await connection.getParsedTokenAccountsByOwner(userKey, {
               programId: solanaWeb3.TOKEN_PROGRAM_ID,
             });
 
+            console.log('Parsed token accounts:', parsed);
+
+            // Check if parsed.value exists and is an array
+            if (!parsed || !Array.isArray(parsed.value)) {
+              alert('Failed to fetch token accounts. Please try again.');
+              return;
+            }
+
             // Check token balance
-            const hasToken = parsed.value.some(
-              (acc) =>
-                acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
-                acc.account.data.parsed.info.tokenAmount.uiAmount > 0
-            );
+            const hasToken = parsed.value.some((acc) => {
+              const accountInfo = acc.account.data.parsed.info;
+              console.log('Account info:', accountInfo);
+              return (
+                accountInfo.mint === TOKEN_MINT.toString() &&
+                accountInfo.tokenAmount.uiAmount > 0
+              );
+            });
 
             if (!hasToken) {
               alert('🚫 You need at least 1 token to access the private Telegram group.');

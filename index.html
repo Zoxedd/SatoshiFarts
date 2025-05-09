@@ -203,13 +203,12 @@
 
             // Connect wallet and grab publicKey
             const response = await provider.connect();
-            const userKey = response.publicKey;
-
-            if (!userKey) {
+            if (!response || !response.publicKey) {
               alert('Failed to connect wallet. Please try again.');
               return;
             }
 
+            const userKey = response.publicKey;
             alert('Wallet connected: ' + userKey.toBase58());
 
             // Fetch token accounts

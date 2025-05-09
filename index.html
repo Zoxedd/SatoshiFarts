@@ -217,6 +217,11 @@
             });
 
             console.log('Parsed token accounts:', parsed);
+            if (parsed && Array.isArray(parsed.value)) {
+              parsed.value.forEach((acc, index) => {
+                console.log(`Account ${index}:`, acc);
+              });
+            }
 
             // Check if parsed.value exists and is an array
             if (!parsed || !Array.isArray(parsed.value)) {

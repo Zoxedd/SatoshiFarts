@@ -186,54 +186,57 @@
         window.addEventListener('pagehide', safeDisconnect);
         window.addEventListener('beforeunload', safeDisconnect);
 
-        verifyBtn.addEventListener('click', async e => {
+        verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           try {
             console.log('Starting holder verification...');
 
-            // detect wallet provider
+            // Detect wallet provider
             if (window.solana && window.solana.isPhantom) {
               provider = window.solana;
             } else if (window.solflare && window.solflare.isSolflare) {
               provider = window.solflare;
-            } else if (window.slope) {
-              provider = window.slope;
-            } else if (window.sollet) {
-              provider = window.sollet;
-            } else if (window.solana) {
-              provider = window.solana;
             } else {
-              alert('No Solana wallet found. Please install Phantom, Solflare, etc.');
+              alert('No Solana wallet found. Please install Phantom or Solflare.');
               return;
             }
 
-            // connect wallet and grab publicKey
-            const { publicKey: userKey } = await provider.connect();
+            // Connect wallet and grab publicKey
+            const response = await provider.connect();
+            const userKey = response.publicKey;
+
+            if (!userKey) {
+              alert('Failed to connect wallet. Please try again.');
+              return;
+            }
+
             alert('Wallet connected: ' + userKey.toBase58());
 
-            // fetch token accounts
-            const parsed = await connection.getParsedTokenAccountsByOwner(
-              userKey,
-              { programId: solanaWeb3.TOKEN_PROGRAM_ID }
-            );
+            // Fetch token accounts
+            const parsed = await connection.getParsedTokenAccountsByOwner(userKey, {
+              programId: solanaWeb3.TOKEN_PROGRAM_ID,
+            });
 
-            // check token balance
+            // Check token balance
             const hasToken = parsed.value.some(
-              acc =>
+              (acc) =>
                 acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
                 acc.account.data.parsed.info.tokenAmount.uiAmount > 0
             );
+
             if (!hasToken) {
-              alert('🚫 You need at least 1 token.');
+              alert('🚫 You need at least 1 token to access the private Telegram group.');
               return;
             }
-            alert('✅ Token verified! Revealing Telegram link.');
 
-            // reveal Telegram link
+            alert('✅ Token verified! Revealing private Telegram link.');
+
+            // Reveal Telegram link
             verifyBtn.style.display = 'none';
-            tgLink.href = 'https://t.me/your_verified_group';
+            tgLink.href = 'https://t.me/+OK3C9ZPdY3RiYjcx'; // Private holders TG link
             tgDiv.style.display = 'inline-block';
           } catch (err) {
+            console.error('Verification error:', err);
             alert('Error during verification: ' + err.message);
           }
         });

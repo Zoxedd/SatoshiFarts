@@ -1,11 +1,172 @@
 /* style.css */
 
+/* Base styles */
 body {
   font-family: 'Press Start 2P', monospace;
   background-color: #000;
-  color: #0f0;
+  color: #39ff14;
+  margin: 0;
+  padding: 0;
 }
 
+/* Intro overlay */
+.intro-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: introFade 4s ease-out forwards;
+}
+
+@keyframes introFade {
+  0%, 80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.intro-text {
+  color: #39ff14;
+  font-family: 'Press Start 2P', monospace;
+  text-align: center;
+  font-size: 1rem;
+  padding: 0 1rem;
+}
+
+/* Crawl animation */
+.crawl-container {
+  position: relative;
+  overflow: hidden;
+  perspective: 400px;
+  margin-bottom: 2rem;
+  height: 50vh;
+}
+
+.crawl {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 0.5rem;
+  transform-origin: 50% 100%;
+  font-family: 'Press Start 2P', monospace;
+  color: #39ff14;
+  animation: crawl 35s ease-in-out infinite;
+  animation-play-state: paused;
+  cursor: pointer;
+}
+
+.crawl p {
+  margin: 0 0.5rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.crawl.paused {
+  animation-play-state: paused;
+}
+
+.crawl.running {
+  animation-play-state: running;
+}
+
+@keyframes crawl {
+  0% {
+    transform: rotateX(25deg) translateZ(0) translateY(100%);
+  }
+  100% {
+    transform: rotateX(25deg) translateZ(-250px) translateY(-300%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 639px) {
+  .crawl {
+    animation-duration: 50s !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .intro-text {
+    font-size: 2rem;
+  }
+  .crawl-container {
+    height: 60vh;
+  }
+  .crawl {
+    left: -5%;
+    width: 110%;
+    padding: 0 1rem;
+  }
+  .crawl p {
+    margin: 0 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  header h1 {
+    font-size: 2.5rem;
+  }
+  header p {
+    font-size: 1.125rem;
+  }
+  iframe.jup-swap {
+    height: 600px;
+
+  }button#mint-btn {
+    display: inline-block;
+    width: auto;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+  }
+} /* Closing @media (min-width: 640px) */
+
+/* Header typography */
+header h1 {
+  font-size: 1.75rem;
+}
+
+header p {
+  font-size: 0.875rem;
+}
+
+/* Swap widget */
+iframe.jup-swap {
+  height: 550px; /* Increase the height of swap*/
+}
+
+/* Mint button */
+button#mint-btn {
+  display: inline-block; /* Ensure it doesn't span the full width */
+  width: auto; /* Adjust width to fit content */
+  font-size: 1rem; /* Keep the font size consistent */
+  padding: 0.75rem 1.5rem; /* Add padding for better appearance */
+  margin: 0 auto 1rem; /* Add bottom margin to create space */
+  background: #004400; /* Match the Verify button's background color */
+  color: #39ff14; /* Match the Verify button's text color */
+}
+
+/* Social links */
+.social-links a {
+  margin: 0 0.75rem;
+  color: #39ff14;
+  text-decoration: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.875rem;
+}
+
+.social-links a:hover {
+  text-decoration: underline;
+}
+
+/* Fart-cloud decorative animation */
 @keyframes fart {
   0% {
     transform: translate(0, 0) scale(1);
@@ -55,14 +216,14 @@ body {
   left: -0.5rem;
 }
 
-
-/* === Added Holder Verification Button Styles === */
-
+/* Verify button */
 #verify-btn {
-  background: #004400;
-  color: #39ff14;
+  background: #004400; /* Keep the same background color */
+  color: #39ff14; /* Keep the same text color */
+  margin-top: 1rem; /* Optional: Add top margin for additional spacing */
 }
 
-#verify-btn:hover {
-  background: #006600;
+#verify-btn:hover,
+button#mint-btn:hover {
+  background: #006600; /* Add hover effect for both buttons */
 }

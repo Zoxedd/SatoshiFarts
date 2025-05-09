@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Satoshi's Fart</title>
+    <!-- Tailwind & custom CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -13,70 +14,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
-    <style>
-      /* Mobile-first responsive adjustments */
-      .intro-text { font-size: 1rem; padding: 0 1rem; }
-      .crawl-container { height: 50vh; }
-      .crawl { left: 0; width: 100%; padding: 0 0.5rem; }
-      .crawl p { margin: 0 0.5rem 1rem; font-size: 0.875rem; line-height: 1.4; }
-      header h1 { font-size: 1.75rem; }
-      header p { font-size: 0.875rem; }
-      iframe.jup-swap { height: 250px; }
-      button#mint-btn { width: 100%; font-size: 0.875rem; padding: 0.75rem; }
-      @media (max-width: 639px) { .crawl { animation-duration: 50s !important; } }
-      @media (min-width: 640px) {
-        .intro-text { font-size: 2rem; }
-        .crawl-container { height: 60vh; }
-        .crawl { left: -5%; width: 110%; padding: 0 1rem; }
-        .crawl p { margin: 0 1rem 1.5rem; font-size: 1rem; }
-        header h1 { font-size: 2.5rem; }
-        header p { font-size: 1.125rem; }
-        iframe.jup-swap { height: 600px; }
-        button#mint-btn { width: auto; font-size: 1rem; padding: 0.75rem 1.5rem; }
-      }
-      .intro-container {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: introFade 4s ease-out forwards;
-      }
-      @keyframes introFade {
-        0%, 80% { opacity: 1; }
-        100%   { opacity: 0; visibility: hidden; }
-      }
-      .intro-text {
-        color: #39ff14;
-        font-family: 'Press Start 2P', monospace;
-        text-align: center;
-      }
-      .crawl-container {
-        position: relative;
-        overflow: hidden;
-        perspective: 400px;
-        margin-bottom: 2rem;
-      }
-      .crawl {
-        position: absolute;
-        bottom: 0;
-        transform-origin: 50% 100%;
-        font-family: 'Press Start 2P', monospace;
-        color: #39ff14;
-        animation: crawl 35s ease-in-out infinite;
-        animation-play-state: paused;
-        cursor: pointer;
-      }
-      .crawl.paused { animation-play-state: paused; }
-      .crawl.running { animation-play-state: running; }
-      @keyframes crawl {
-        0%   { transform: rotateX(25deg) translateZ(0) translateY(100%); }
-        100% { transform: rotateX(25deg) translateZ(-250px) translateY(-300%); }
-      }
-    </style>
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
@@ -116,7 +53,7 @@
         MINT A FART 💨
       </button>
 
-      <!-- NEW: Verify Holder button -->
+      <!-- Verify Holder button -->
       <button
         id="verify-btn"
         class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full transition duration-200 px-6 py-3 mb-12"
@@ -135,10 +72,7 @@
       </section>
 
       <!-- Donate Section -->
-      <section
-        id="donate"
-        class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center"
-      >
+      <section id="donate" class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
         <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
         <p class="mb-4">Send SOL here to fuel our next push:</p>
         <div class="flex items-center justify-center space-x-2 mb-4">
@@ -149,7 +83,7 @@
             9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
           </code>
           <button
-            id="#copyAddrBtn"
+            id="copyAddrBtn"
             class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
           >
             Copy
@@ -169,23 +103,28 @@
     <footer class="w-full mt-0 text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
+        <!-- always-visible links -->
         <a
           href="https://x.com/NoveskeBoiiii"
-          target="#blank"
+          target="_blank"
           rel="noopener noreferrer"
-          class="hover:underline"
         >
           X (Twitter)
         </a>
-
-        <!-- hidden until holder verified -->
-        <div id="tg-holders-only" style="display:none;">
+        <a
+          href="https://t.me/SFartSatoshisFart"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Telegram
+        </a>
+        <!-- hidden until holder verification -->
+        <div id="tg-holders-only" style="display: none;">
           <a
             id="tg-invite-link"
             href="#"
-            target="#blank"
+            target="_blank"
             rel="noopener noreferrer"
-            class="hover:underline"
           >
             Telegram (Holders Only)
           </a>
@@ -253,49 +192,30 @@
             console.log('Starting holder verification...');
 
             // detect wallet provider
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(
-              navigator.userAgent
-            );
             if (window.solana && window.solana.isPhantom) {
               provider = window.solana;
-              console.log('Detected Phantom provider');
             } else if (window.solflare && window.solflare.isSolflare) {
               provider = window.solflare;
-              console.log('Detected Solflare provider');
             } else if (window.slope) {
               provider = window.slope;
-              console.log('Detected Slope provider');
             } else if (window.sollet) {
               provider = window.sollet;
-              console.log('Detected Sollet provider');
             } else if (window.solana) {
               provider = window.solana;
-              console.log('Detected generic solana provider');
             } else {
-              const msg = 'No Solana wallet found';
-              console.warn(msg);
-              alert(msg + '. Please install Phantom, Solflare, etc.');
+              alert('No Solana wallet found. Please install Phantom, Solflare, etc.');
               return;
             }
 
-            // connect wallet and grab publicKey from response
+            // connect wallet and grab publicKey
             const { publicKey: userKey } = await provider.connect();
-            console.log('Wallet connected:', userKey.toBase58());
             alert('Wallet connected: ' + userKey.toBase58());
 
             // fetch token accounts
-            let parsed;
-            try {
-              parsed = await connection.getParsedTokenAccountsByOwner(
-                userKey,
-                { programId: solanaWeb3.TOKEN_PROGRAM_ID }
-              );
-              console.log('Token accounts fetched:', parsed);
-            } catch (fetchErr) {
-              console.error('Error fetching token accounts:', fetchErr);
-              alert('Error fetching token accounts: ' + fetchErr.message);
-              return;
-            }
+            const parsed = await connection.getParsedTokenAccountsByOwner(
+              userKey,
+              { programId: solanaWeb3.TOKEN_PROGRAM_ID }
+            );
 
             // check token balance
             const hasToken = parsed.value.some(
@@ -303,7 +223,6 @@
                 acc.account.data.parsed.info.mint === TOKEN_MINT.toString() &&
                 acc.account.data.parsed.info.tokenAmount.uiAmount > 0
             );
-            console.log('Holder check result:', hasToken);
             if (!hasToken) {
               alert('🚫 You need at least 1 token.');
               return;
@@ -311,12 +230,10 @@
             alert('✅ Token verified! Revealing Telegram link.');
 
             // reveal Telegram link
-            const INVITE_LINK = 'https://t.me/your_verified_group';
             verifyBtn.style.display = 'none';
-            tgLink.href = INVITE_LINK;
+            tgLink.href = 'https://t.me/your_verified_group';
             tgDiv.style.display = 'inline-block';
           } catch (err) {
-            console.error('Verification error:', err);
             alert('Error during verification: ' + err.message);
           }
         });

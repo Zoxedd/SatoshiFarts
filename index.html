@@ -15,13 +15,7 @@
     />
     <link rel="stylesheet" href="style.css" />
 
-    <!-- inline mobile fixes -->
-    <style>
-      /* kill horizontal scroll */
-      html, body { overflow-x: hidden; }
-      /* ensure media scales down */
-      iframe, img { max-width: 100%; height: auto; display: block; }
-    </style>
+    <!-- inline mobile fixes moved to external stylesheet -->
 
     <!-- Solana libraries (deferred) -->
     <script
@@ -154,105 +148,112 @@
       });
     </script>
 
-    <!-- verification scripts with full logging & error handling -->
+    <!-- verification scripts with robust disconnect & inline debugging -->
     <script defer>
-      window.addEventListener('load', async () => {
+      window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
-        const tgDiv = document.getElementById('tg-holders-only');
-        const tgLink = document.getElementById('tg-invite-link');
+        const tgDiv     = document.getElementById('tg-holders-only');
+        const tgLink    = document.getElementById('tg-invite-link');
         let provider;
 
-        // safe disconnect on unload
-        function safeDisconnect() {
-          if (provider?.isConnected) provider.disconnect().catch(() => {});
+        // Robust disconnect handler
+        async function safeDisconnect() {
+          if (provider?.isConnected) {
+            alert('Disconnecting wallet…');
+            try {
+              await provider.disconnect();
+              console.log('Wallet disconnected');
+            } catch (e) {
+              console.warn('Disconnect error', e);
+            }
+          }
         }
         window.addEventListener('pagehide', safeDisconnect);
         window.addEventListener('beforeunload', safeDisconnect);
-
-        // 1️⃣ Fetch a one-time nonce
-        console.log('Fetching nonce from backend...');
-        const { nonce } = await fetch('/api/nonce').then((r) => r.json());
-        console.log('Received nonce:', nonce);
-
-        verifyBtn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          verifyBtn.disabled = true;
-          verifyBtn.textContent = 'Signing…';
-          console.log('Starting verification process...');
-
-          try {
-            // Detect wallet provider
-            if (window.solana?.isPhantom) {
-              provider = window.solana;
-              console.log('Phantom wallet detected.');
-            } else if (window.solflare?.isSolflare) {
-              provider = window.solflare;
-              console.log('Solflare wallet detected.');
-            } else if (window.sollet?.isSollet) {
-              provider = window.sollet;
-              console.log('Sollet wallet detected.');
-            } else if (window.backpack?.isBackpack) {
-              provider = window.backpack;
-              console.log('Backpack wallet detected.');
-            } else {
-              throw new Error('No supported Solana wallet found.');
-            }
-
-            // Connect to wallet
-            console.log('Connecting to wallet...');
-            const resp = await provider.connect();
-            console.log('connect() response:', resp);
-            if (!provider.publicKey) throw new Error('Wallet connection failed.');
-            console.log('Wallet connected:', provider.publicKey.toBase58());
-
-            // Sign the nonce
-            console.log('Signing the nonce...');
-            const encoded = new TextEncoder().encode(nonce);
-            const signed = await provider.signMessage(encoded, 'utf8');
-            console.log('Nonce signed successfully.');
-
-            // Convert Uint8Array to base64
-            const sigUint8 = new Uint8Array(signed);
-            const sigStr = Array.from(sigUint8)
-              .map((b) => String.fromCharCode(b))
-              .join('');
-            const signature = btoa(sigStr);
-            console.log('Signature (base64):', signature);
-            const publicKey = provider.publicKey.toString();
-            console.log('PublicKey:', publicKey);
-
-            verifyBtn.textContent = 'Verifying…';
-
-            // 2️⃣ Send to backend for on-chain check
-            console.log('Sending data to backend for verification...');
-            const res = await fetch('/api/verify-holder', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ publicKey, signature, nonce }),
-            });
-            console.log('HTTP status:', res.status);
-            const data = await res.json();
-            console.log('Backend response:', data);
-            if (!res.ok) throw new Error(data.error || 'Verification failed on the backend.');
-
-            // 3️⃣ Unlock TG link
-            console.log('Verification successful. Unlocking Telegram link...');
-            tgLink.href = data.inviteLink;
-            tgDiv.style.display = 'inline-block';
-            verifyBtn.style.display = 'none';
-          } catch (err) {
-            console.error('Verification error:', err);
-            if (err.message.includes('toBase58')) {
-              alert('Error: Wallet public key is undefined. Please ensure your wallet is properly connected.');
-            } else if (err.message.includes('Verification failed')) {
-              alert('🚫 Verification failed: ' + err.message);
-            } else {
-              alert('Unexpected error: ' + err.message);
-            }
-            verifyBtn.disabled = false;
-            verifyBtn.textContent = 'Verify Holder Access 🔑';
-          }
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') safeDisconnect();
         });
+
+        // 1️⃣ Fetch nonce
+        alert('Fetching nonce from backend…');
+        fetch('/api/nonce')
+          .then(r => r.json())
+          .then(({ nonce }) => {
+            alert('Received nonce: ' + nonce);
+
+            verifyBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              verifyBtn.disabled = true;
+              verifyBtn.textContent = 'Signing…';
+              alert('Starting verification…');
+
+              try {
+                // Detect wallet
+                if (window.solana?.isPhantom) {
+                  provider = window.solana;
+                  alert('Phantom detected');
+                } else if (window.solflare?.isSolflare) {
+                  provider = window.solflare;
+                  alert('Solflare detected');
+                } else {
+                  throw new Error('No supported wallet');
+                }
+
+                // Connect
+                alert('Connecting wallet…');
+                const resp = await provider.connect();
+                alert('connect() returned: ' + JSON.stringify(resp));
+                if (!provider.publicKey) throw new Error('No publicKey');
+                alert('PublicKey: ' + provider.publicKey.toBase58());
+
+                // Sign
+                alert('Signing nonce…');
+                const encoded = new TextEncoder().encode(nonce);
+                const signed  = await provider.signMessage(encoded, 'utf8');
+                alert('Message signed: ' + signed.length + ' bytes');
+
+                // Convert to base64
+                const sigArr = Array.from(new Uint8Array(signed))
+                                   .map(b => String.fromCharCode(b))
+                                   .join('');
+                const signature = btoa(sigArr);
+                alert('Signature (base64): ' + signature);
+
+                verifyBtn.textContent = 'Verifying…';
+                alert('Sending to backend…');
+
+                // Send for on-chain verify
+                const res = await fetch('/api/verify-holder', {
+                  method: 'POST',
+                  headers:{ 'Content-Type':'application/json' },
+                  body: JSON.stringify({
+                    publicKey: provider.publicKey.toString(),
+                    signature,
+                    nonce
+                  })
+                });
+                alert('Backend HTTP status: ' + res.status);
+                const data = await res.json();
+                alert('Backend response: ' + JSON.stringify(data));
+                if (!res.ok) throw new Error(data.error || 'Backend failed');
+
+                // Success
+                alert('Verified! Unlocking TG link.');
+                tgLink.href         = data.inviteLink;
+                tgDiv.style.display = 'inline-block';
+                verifyBtn.style.display = 'none';
+              } catch (err) {
+                console.error(err);
+                alert('Error: ' + err.message);
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Holder Access 🔑';
+              }
+            });
+          })
+          .catch(err => {
+            console.error('Nonce fetch error', err);
+            alert('Failed to fetch nonce: ' + err.message);
+          });
       });
     </script>
   </body>

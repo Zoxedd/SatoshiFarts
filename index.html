@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="overflow-x-hidden">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,6 +14,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <!-- prevent horizontal scroll on mobile -->
+    <style>html, body { overflow-x: hidden; }</style>
 
     <!-- Solana libraries (deferred) -->
     <script
@@ -25,7 +27,7 @@
       defer
     ></script>
   </head>
-  <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
+  <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14] overflow-x-hidden">
     <!-- Intro overlay -->
     <div id="introOverlay" class="intro-container">
       <div class="intro-text">The Original Gas Fee.</div>
@@ -39,7 +41,7 @@
     </header>
 
     <!-- Scrolling lore -->
-    <div class="crawl-container w-full max-w-screen-lg mx-auto">
+    <div class="crawl-container w-full max-w-full overflow-hidden mx-auto">
       <div class="crawl paused" id="crawlText">
         <p>In the dawn of Bitcoin, a singular cosmic expulsion...</p>
         <p>From that primordial gust rose the sprawling empire...</p>
@@ -47,8 +49,8 @@
       </div>
     </div>
 
-    <main class="flex flex-col items-center w-full px-4">
-      <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto rounded-xl shadow-lg mb-8" />
+    <main class="flex flex-col items-center w-full px-4 overflow-x-hidden">
+      <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto rounded-xl shadow-lg mb-8 max-w-full h-auto" />
 
       <button id="mint-btn" class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full px-6 py-3 mb-8">
         MINT A FART 💨
@@ -58,20 +60,20 @@
         Verify Holder Access 🔑
       </button>
 
-      <section id="swap-widget" class="w-full max-w-screen-lg mb-12">
+      <section id="swap-widget" class="w-full max-w-full sm:max-w-screen-lg mb-12 mx-auto overflow-hidden">
         <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart</h2>
         <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" frameborder="0"></iframe>
       </section>
 
-      <section id="donate" class="w-full max-w-screen-lg mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
+      <section id="donate" class="w-full max-w-full sm:max-w-screen-lg mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center mx-auto">
         <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
-        <code id="donationAddr" class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300 mb-4 block">
+        <code id="donationAddr" class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300 mb-4 block max-w-full">
           9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
         </code>
         <button id="copyAddrBtn" class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 mb-4 rounded">
           Copy
         </button>
-        <a href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers" target="_blank" class="underline text-green-400">
+        <a href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers" target="_blank" class="underline text-green-400 block overflow-hidden">
           View on Solscan
         </a>
       </section>
@@ -80,7 +82,7 @@
     <footer class="w-full text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
-        <a href="https://x.com/NoveskeBoiiii" target="_blank">X</a>
+        <a href="https://x.com/NoveskeBoiiii" target="_blank">X (Twitter)</a>
         <a href="https://t.me/SFartSatoshisFart" target="_blank">Telegram</a>
         <div id="tg-holders-only" style="display:none;">
           <a id="tg-invite-link" href="#" target="_blank">Telegram (Holders Only)</a>
@@ -116,14 +118,12 @@
         const tgLink = document.getElementById('tg-invite-link');
         let provider;
 
-        // safe disconnect on unload
         function safeDisconnect() {
           if (provider?.isConnected) provider.disconnect().catch(() => {});
         }
         window.addEventListener('pagehide', safeDisconnect);
         window.addEventListener('beforeunload', safeDisconnect);
 
-        // 1️⃣ Fetch a one-time nonce
         console.log('Fetching nonce from backend...');
         const { nonce } = await fetch('/api/nonce').then(r => r.json());
         console.log('Received nonce:', nonce);
@@ -135,37 +135,23 @@
           console.log('Starting verification process...');
 
           try {
-            // Detect wallet provider
-            if (window.solana?.isPhantom) {
-              provider = window.solana;
-              console.log('Phantom wallet detected.');
-            } else if (window.solflare?.isSolflare) {
-              provider = window.solflare;
-              console.log('Solflare wallet detected.');
-            } else if (window.sollet?.isSollet) {
-              provider = window.sollet;
-              console.log('Sollet wallet detected.');
-            } else if (window.backpack?.isBackpack) {
-              provider = window.backpack;
-              console.log('Backpack wallet detected.');
-            } else {
-              throw new Error('No supported Solana wallet found.');
-            }
+            if (window.solana?.isPhantom) provider = window.solana;
+            else if (window.solflare?.isSolflare) provider = window.solflare;
+            else if (window.sollet?.isSollet) provider = window.sollet;
+            else if (window.backpack?.isBackpack) provider = window.backpack;
+            else throw new Error('No supported Solana wallet found.');
 
-            // Connect to wallet
             console.log('Connecting to wallet...');
             const resp = await provider.connect();
             console.log('connect() response:', resp);
             if (!provider.publicKey) throw new Error('Wallet connection failed.');
             console.log('Wallet connected:', provider.publicKey.toBase58());
 
-            // Sign the nonce
             console.log('Signing the nonce...');
             const encoded = new TextEncoder().encode(nonce);
             const signed = await provider.signMessage(encoded, 'utf8');
             console.log('Nonce signed successfully.');
 
-            // Convert Uint8Array to base64
             const sigUint8 = new Uint8Array(signed);
             const sigStr = Array.from(sigUint8).map(b => String.fromCharCode(b)).join('');
             const signature = btoa(sigStr);
@@ -175,7 +161,6 @@
 
             verifyBtn.textContent = 'Verifying…';
 
-            // 2️⃣ Send to backend for on-chain check
             console.log('Sending data to backend for verification...');
             const res = await fetch('/api/verify-holder', {
               method: 'POST',
@@ -187,7 +172,6 @@
             console.log('Backend response:', data);
             if (!res.ok) throw new Error(data.error || 'Verification failed on the backend.');
 
-            // 3️⃣ Unlock TG link
             console.log('Verification successful. Unlocking Telegram link...');
             tgLink.href = data.inviteLink;
             tgDiv.style.display = 'inline-block';

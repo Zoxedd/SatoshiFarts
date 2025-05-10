@@ -14,6 +14,16 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+
+    <!-- Solana libraries (deferred) -->
+    <script
+      src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
+      defer
+    ></script>
+    <script
+      src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"
+      defer
+    ></script>
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
@@ -161,11 +171,9 @@
       });
     </script>
 
-    <!-- wallet and verification logic with error handling -->
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
-    <script>
-      (async () => {
+    <!-- patched wallet & verification logic -->
+    <script defer>
+      window.addEventListener('load', () => {
         const TOKEN_MINT = new solanaWeb3.PublicKey(
           'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump'
         );
@@ -178,84 +186,53 @@
         const tgLink = document.getElementById('tg-invite-link');
         let provider;
 
-        function safeDisconnect() {
-          if (provider && provider.isConnected) {
-            provider.disconnect().catch(() => {});
-          }
-        }
-        window.addEventListener('pagehide', safeDisconnect);
-        window.addEventListener('beforeunload', safeDisconnect);
-
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
+          verifyBtn.disabled = true;
+          verifyBtn.textContent = 'Checking…';
+
           try {
-            console.log('Starting holder verification...');
+            // 1) detect wallet provider
+            if (window.solana?.isPhantom) provider = window.solana;
+            else if (window.solflare?.isSolflare) provider = window.solflare;
+            else if (window.sollet?.isSollet) provider = window.sollet;
+            else if (window.backpack?.isBackpack) provider = window.backpack;
+            else throw new Error('No supported Solana wallet found.');
 
-            // Detect wallet provider
-            if (window.solana && window.solana.isPhantom) {
-              provider = window.solana;
-            } else if (window.solflare && window.solflare.isSolflare) {
-              provider = window.solflare;
-            } else {
-              alert('No Solana wallet found. Please install Phantom or Solflare.');
-              return;
-            }
+            // 2) connect
+            await provider.connect();
+            const userKey = provider.publicKey;
+            if (!userKey) throw new Error('Wallet connection failed.');
 
-            // Connect wallet and grab publicKey
-            const response = await provider.connect();
-            if (!response || !response.publicKey) {
-              alert('Failed to connect wallet. Please try again.');
-              return;
-            }
+            // 3) fetch parsed token accounts
+            const { value: accounts } = await connection.getParsedTokenAccountsByOwner(
+              userKey,
+              { programId: solanaWeb3.TOKEN_PROGRAM_ID }
+            );
 
-            const userKey = response.publicKey;
-            console.log('Wallet connected:', userKey.toBase58());
-
-            // Fetch token accounts
-            const parsed = await connection.getParsedTokenAccountsByOwner(userKey, {
-              programId: solanaWeb3.TOKEN_PROGRAM_ID,
-            });
-
-            console.log('Parsed token accounts:', parsed);
-            if (parsed && Array.isArray(parsed.value)) {
-              parsed.value.forEach((acc, index) => {
-                console.log(`Account ${index}:`, acc);
-              });
-            }
-
-            // Check if parsed.value exists and is an array
-            if (!parsed || !Array.isArray(parsed.value)) {
-              alert('Failed to fetch token accounts. Please try again.');
-              return;
-            }
-
-            // Check token balance
-            const hasToken = parsed.value.some((acc) => {
-              const accountInfo = acc.account.data.parsed.info;
-              console.log('Account info:', accountInfo);
+            // 4) verify balance > 0 (raw amount)
+            const hasToken = accounts.some(({ account }) => {
+              const info = account.data.parsed.info;
               return (
-                accountInfo.mint === TOKEN_MINT.toString() &&
-                accountInfo.tokenAmount.uiAmount > 0
+                info.mint === TOKEN_MINT.toString() &&
+                BigInt(info.tokenAmount.amount) > 0n
               );
             });
 
-            if (!hasToken) {
-              alert('🚫 You need at least 1 token to access the private Telegram group.');
-              return;
-            }
+            if (!hasToken) throw new Error('You need at least 1 token to access.');
 
-            alert('✅ Token verified! Revealing private Telegram link.');
-
-            // Reveal Telegram link
+            // 5) success: show TG link
             verifyBtn.style.display = 'none';
-            tgLink.href = 'https://t.me/+OK3C9ZPdY3RiYjcx'; // Private holders TG link
+            tgLink.href = 'https://t.me/+OK3C9ZPdY3RiYjcx';
             tgDiv.style.display = 'inline-block';
           } catch (err) {
             console.error('Verification error:', err);
-            alert('Error during verification: ' + err.message);
+            alert('Verification failed: ' + err.message);
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
           }
         });
-      })();
+      });
     </script>
   </body>
 </html>

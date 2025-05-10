@@ -41,193 +41,166 @@
     <!-- Scrolling lore -->
     <div class="crawl-container w-full max-w-screen-lg mx-auto">
       <div class="crawl paused" id="crawlText">
-        <p>In the dawn of Bitcoin, a singular cosmic expulsion known only as Satoshi's Fart rippled through the nascent network. That first gas fee—tiny, unassuming, yet eternal—sparked the blocks, setting the blockchain ablaze in a cascade of cryptographic proof.</p>
-        <p>From that primordial gust rose the sprawling empire of memecoins, DeFi schemes, and digital gold. Each transaction, every smart contract, owes its ignition to the original fee tokenized here: the essence of Satoshi's Fart itself.</p>
-        <p>Today, we bottle that legendary gas, honoring the flatulent genesis of decentralized finance. Mint your own fragment of blockchain history, and let Satoshi’s Fart propel you into the next era of on-chain adventures.</p>
+        <p>In the dawn of Bitcoin, a singular cosmic expulsion...</p>
+        <p>From that primordial gust rose the sprawling empire...</p>
+        <p>Today, we bottle that legendary gas...</p>
       </div>
     </div>
 
     <main class="flex flex-col items-center w-full px-4">
-      <div class="w-full mb-8">
-        <img
-          src="/SatoshiFarts.png"
-          alt="Satoshi's Fart"
-          class="mx-auto max-w-full h-auto rounded-xl shadow-lg"
-        />
-      </div>
+      <img src="/SatoshiFarts.png" alt="Satoshi's Fart" class="mx-auto rounded-xl shadow-lg mb-8" />
 
-      <button
-        id="mint-btn"
-        class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full transition duration-200 mb-8"
-      >
+      <button id="mint-btn" class="bg-green-500 hover:bg-green-400 text-black font-bold rounded-full px-6 py-3 mb-8">
         MINT A FART 💨
       </button>
 
-      <!-- Verify Holder button -->
-      <button
-        id="verify-btn"
-        class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full transition duration-200 px-6 py-3 mb-12"
-      >
+      <button id="verify-btn" class="bg-green-700 hover:bg-green-600 text-black font-bold rounded-full px-6 py-3 mb-12">
         Verify Holder Access 🔑
       </button>
 
-      <section id="swap-widget" class="w-full max-w-screen-lg mx-auto mb-12">
+      <section id="swap-widget" class="w-full max-w-screen-lg mb-12">
         <h2 class="text-center mb-4">Swap SOL for Satoshi's Fart</h2>
-        <iframe
-          class="jup-swap w-full"
-          src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump"
-          frameborder="0"
-          allowfullscreen
-        ></iframe>
+        <iframe class="jup-swap w-full" src="https://jup.ag/swap/SOL-FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump" frameborder="0"></iframe>
       </section>
 
-      <!-- Donate Section -->
-      <section id="donate" class="w-full max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
+      <section id="donate" class="w-full max-w-screen-lg mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center">
         <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
-        <p class="mb-4">Send SOL here to fuel our next push:</p>
-        <div class="flex items-center justify-center space-x-2 mb-4">
-          <code
-            id="donationAddr"
-            class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300"
-          >
-            9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
-          </code>
-          <button
-            id="copyAddrBtn"
-            class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-          >
-            Copy
-          </button>
-        </div>
-        <a
-          href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="underline text-green-400"
-        >
+        <code id="donationAddr" class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300 mb-4 block">
+          9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
+        </code>
+        <button id="copyAddrBtn" class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 mb-4 rounded">
+          Copy
+        </button>
+        <a href="https://solscan.io/account/9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq?exclude_amount_zero=true&remove_spam=true#transfers" target="_blank" class="underline text-green-400">
           View on Solscan
         </a>
       </section>
     </main>
 
-    <footer class="w-full mt-0 text-center text-sm opacity-70">
+    <footer class="w-full text-center text-sm opacity-70">
       <p>&copy; 2025 Satoshi's Fart DAO. All gas rights reserved.</p>
       <div class="mt-4 space-x-6">
-        <!-- always-visible links -->
-        <a
-          href="https://x.com/NoveskeBoiiii"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          X (Twitter)
-        </a>
-        <a
-          href="https://t.me/SFartSatoshisFart"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Telegram
-        </a>
-        <!-- hidden until holder verification -->
-        <div id="tg-holders-only" style="display: none;">
-          <a
-            id="tg-invite-link"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Telegram (Holders Only)
-          </a>
+        <a href="https://x.com/NoveskeBoiiii" target="_blank">X</a>
+        <a href="https://t.me/SFartSatoshisFart" target="_blank">Telegram</a>
+        <div id="tg-holders-only" style="display:none;">
+          <a id="tg-invite-link" href="#" target="_blank">Telegram (Holders Only)</a>
         </div>
       </div>
     </footer>
 
-    <!-- existing UI scripts -->
+    <!-- UI scripts -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
       intro.addEventListener('animationend', () => {
         intro.style.display = 'none';
-        crawl.classList.remove('paused');
-        crawl.classList.add('running');
+        crawl.classList.replace('paused','running');
       });
-
       document.getElementById('mint-btn').addEventListener('click', e => {
         e.preventDefault();
         const sound = document.getElementById('fart-sound');
-        const dexUrl =
-          'https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt';
-        window.open(dexUrl, '_blank');
-        sound.currentTime = 0;
-        sound.play().catch(err => console.warn('Sound blocked', err));
+        sound.currentTime = 0; sound.play().catch(() => {});
+        window.open('https://dexscreener.com/solana/gtqypcgfkxnuods3r7zhazquvauks4djeounk5yzquzt','_blank');
       });
-
-      crawl.addEventListener('click', () => crawl.classList.toggle('running'));
-
       document.getElementById('copyAddrBtn').addEventListener('click', () => {
-        navigator.clipboard
-          .writeText(document.getElementById('donationAddr').innerText)
-          .then(() => alert('Address copied!'));
+        navigator.clipboard.writeText(document.getElementById('donationAddr').innerText)
+          .then(() => alert('Copied!'));
       });
     </script>
 
-    <!-- patched wallet & verification logic -->
+    <!-- verification scripts with full logging & error handling -->
     <script defer>
-      window.addEventListener('load', () => {
-        const TOKEN_MINT = new solanaWeb3.PublicKey(
-          'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump'
-        );
-        const connection = new solanaWeb3.Connection(
-          solanaWeb3.clusterApiUrl('mainnet-beta'),
-          'confirmed'
-        );
+      window.addEventListener('load', async () => {
         const verifyBtn = document.getElementById('verify-btn');
         const tgDiv = document.getElementById('tg-holders-only');
         const tgLink = document.getElementById('tg-invite-link');
         let provider;
 
+        // safe disconnect on unload
+        function safeDisconnect() {
+          if (provider?.isConnected) provider.disconnect().catch(() => {});
+        }
+        window.addEventListener('pagehide', safeDisconnect);
+        window.addEventListener('beforeunload', safeDisconnect);
+
+        // 1️⃣ Fetch a one-time nonce
+        console.log('Fetching nonce from backend...');
+        const { nonce } = await fetch('/api/nonce').then(r => r.json());
+        console.log('Received nonce:', nonce);
+
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           verifyBtn.disabled = true;
-          verifyBtn.textContent = 'Checking…';
+          verifyBtn.textContent = 'Signing…';
+          console.log('Starting verification process...');
 
           try {
-            // 1) detect wallet provider
-            if (window.solana?.isPhantom) provider = window.solana;
-            else if (window.solflare?.isSolflare) provider = window.solflare;
-            else if (window.sollet?.isSollet) provider = window.sollet;
-            else if (window.backpack?.isBackpack) provider = window.backpack;
-            else throw new Error('No supported Solana wallet found.');
+            // Detect wallet provider
+            if (window.solana?.isPhantom) {
+              provider = window.solana;
+              console.log('Phantom wallet detected.');
+            } else if (window.solflare?.isSolflare) {
+              provider = window.solflare;
+              console.log('Solflare wallet detected.');
+            } else if (window.sollet?.isSollet) {
+              provider = window.sollet;
+              console.log('Sollet wallet detected.');
+            } else if (window.backpack?.isBackpack) {
+              provider = window.backpack;
+              console.log('Backpack wallet detected.');
+            } else {
+              throw new Error('No supported Solana wallet found.');
+            }
 
-            // 2) connect
-            await provider.connect();
-            const userKey = provider.publicKey;
-            if (!userKey) throw new Error('Wallet connection failed.');
+            // Connect to wallet
+            console.log('Connecting to wallet...');
+            const resp = await provider.connect();
+            console.log('connect() response:', resp);
+            if (!provider.publicKey) throw new Error('Wallet connection failed.');
+            console.log('Wallet connected:', provider.publicKey.toBase58());
 
-            // 3) fetch parsed token accounts
-            const { value: accounts } = await connection.getParsedTokenAccountsByOwner(
-              userKey,
-              { programId: solanaWeb3.TOKEN_PROGRAM_ID }
-            );
+            // Sign the nonce
+            console.log('Signing the nonce...');
+            const encoded = new TextEncoder().encode(nonce);
+            const signed = await provider.signMessage(encoded, 'utf8');
+            console.log('Nonce signed successfully.');
 
-            // 4) verify balance > 0 (raw amount)
-            const hasToken = accounts.some(({ account }) => {
-              const info = account.data.parsed.info;
-              return (
-                info.mint === TOKEN_MINT.toString() &&
-                BigInt(info.tokenAmount.amount) > 0n
-              );
+            // Convert Uint8Array to base64
+            const sigUint8 = new Uint8Array(signed);
+            const sigStr = Array.from(sigUint8).map(b => String.fromCharCode(b)).join('');
+            const signature = btoa(sigStr);
+            console.log('Signature (base64):', signature);
+            const publicKey = provider.publicKey.toString();
+            console.log('PublicKey:', publicKey);
+
+            verifyBtn.textContent = 'Verifying…';
+
+            // 2️⃣ Send to backend for on-chain check
+            console.log('Sending data to backend for verification...');
+            const res = await fetch('/api/verify-holder', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ publicKey, signature, nonce }),
             });
+            console.log('HTTP status:', res.status);
+            const data = await res.json();
+            console.log('Backend response:', data);
+            if (!res.ok) throw new Error(data.error || 'Verification failed on the backend.');
 
-            if (!hasToken) throw new Error('You need at least 1 token to access.');
-
-            // 5) success: show TG link
-            verifyBtn.style.display = 'none';
-            tgLink.href = 'https://t.me/+OK3C9ZPdY3RiYjcx';
+            // 3️⃣ Unlock TG link
+            console.log('Verification successful. Unlocking Telegram link...');
+            tgLink.href = data.inviteLink;
             tgDiv.style.display = 'inline-block';
+            verifyBtn.style.display = 'none';
           } catch (err) {
             console.error('Verification error:', err);
-            alert('Verification failed: ' + err.message);
+            if (err.message.includes('toBase58')) {
+              alert('Error: Wallet public key is undefined. Please ensure your wallet is properly connected.');
+            } else if (err.message.includes('Verification failed')) {
+              alert('🚫 Verification failed: ' + err.message);
+            } else {
+              alert('Unexpected error: ' + err.message);
+            }
             verifyBtn.disabled = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
           }

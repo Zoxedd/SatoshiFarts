@@ -21,13 +21,11 @@
       iframe, img { max-width: 100%; height: auto; display: block; }
     </style>
 
-    <!-- Solana library -->
+    <!-- Solana library (IIFE) -->
     <script
       src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
       defer
     ></script>
-    <!-- Base58 encoder for browser (guaranteed UMD) -->
-    <script src="https://unpkg.com/bs58@4.0.1/dist/index.min.js"></script>
   </head>
 
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
@@ -124,7 +122,7 @@
       </div>
     </footer>
 
-    <!-- Existing UI scripts -->
+    <!-- UI scripts: mint button & copy address -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
@@ -151,7 +149,7 @@
       });
     </script>
 
-    <!-- Holder verification (connect → sign) -->
+    <!-- Holder verification script (connect → sign → verify) -->
     <script defer>
       window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
@@ -159,6 +157,7 @@
         const tgLink    = document.getElementById('tg-invite-link');
         let provider;
 
+        // Safe disconnect if user navigates away
         async function safeDisconnect() {
           if (provider?.isConnected) {
             await provider.disconnect().catch(() => {});
@@ -175,11 +174,12 @@
           verifyBtn.disabled    = true;
           verifyBtn.textContent = 'Signing…';
 
-          // 1) fetch nonce
+          // 1️⃣ Fetch one-time nonce
           let nonce;
           try {
-            const r1  = await fetch('/api/nonce');
-            nonce     = (await r1.json()).nonce;
+            const r1    = await fetch('/api/nonce');
+            ({ nonce } = await r1.json());
+            console.log('Received nonce:', nonce);
           } catch (err) {
             alert('Failed to fetch nonce: ' + err.message);
             verifyBtn.disabled    = false;
@@ -187,21 +187,20 @@
             return;
           }
 
-          // 2) detect wallet
-          if (window.solana?.isPhantom) {
-            provider = window.solana;
-          } else if (window.solflare?.isSolflare) {
-            provider = window.solflare;
-          } else {
-            alert('Please install Phantom or Solflare.');
+          // 2️⃣ Detect wallet
+          if (window.solana?.isPhantom)       provider = window.solana;
+          else if (window.solflare?.isSolflare) provider = window.solflare;
+          else {
+            alert('No Phantom or Solflare wallet found.');
             verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
-          // 3) connect
+          // 3️⃣ Connect wallet
           try {
             await provider.connect();
+            console.log('Connected:', provider.publicKey.toBase58());
           } catch (err) {
             alert('Wallet connection failed: ' + err.message);
             verifyBtn.disabled    = false;
@@ -209,14 +208,19 @@
             return;
           }
 
-          // 4) sign
+          // 4️⃣ Sign the nonce & base-64 encode
           let signature;
           try {
-            const msg     = new TextEncoder().encode(nonce);
-            const signed  = await provider.signMessage(msg, 'utf8');
-            // Phantom returns { signature: Uint8Array }
+            const encoded = new TextEncoder().encode(nonce);
+            const signed  = await provider.signMessage(encoded, 'utf8');
+            // Some wallets return { signature: Uint8Array }
             const sigBytes = signed.signature || signed;
-            signature      = bs58.encode(sigBytes);
+            // convert Uint8Array → binary string → base64
+            const sigStr   = Array.from(sigBytes)
+                                  .map(b => String.fromCharCode(b))
+                                  .join('');
+            signature      = btoa(sigStr);
+            console.log('Signature (base64):', signature);
           } catch (err) {
             alert('Failed to sign message: ' + err.message);
             verifyBtn.disabled    = false;
@@ -224,21 +228,22 @@
             return;
           }
 
-          // 5) verify on backend
+          // 5️⃣ Send to backend for on-chain token check
           verifyBtn.textContent = 'Verifying…';
-          let json;
+          let result;
           try {
             const r2   = await fetch('/api/verify-holder', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers:{ 'Content-Type':'application/json' },
               body: JSON.stringify({
                 publicKey: provider.publicKey.toString(),
                 signature,
                 nonce
               })
             });
-            json = await r2.json();
-            if (!r2.ok) throw new Error(json.error || 'Verification failed');
+            result = await r2.json();
+            if (!r2.ok) throw new Error(result.error || 'Verification failed');
+            console.log('Backend response:', result);
           } catch (err) {
             alert('Verification failed: ' + err.message);
             verifyBtn.disabled    = false;
@@ -246,9 +251,9 @@
             return;
           }
 
-          // 6) success
-          tgLink.href          = json.invite;
-          tgDiv.style.display  = 'inline-block';
+          // 6️⃣ Success: reveal your private TG link
+          tgLink.href         = result.inviteLink || result.invite;
+          tgDiv.style.display = 'inline-block';
           verifyBtn.style.display = 'none';
         });
       });

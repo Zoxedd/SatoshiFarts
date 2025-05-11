@@ -15,15 +15,20 @@
     />
     <link rel="stylesheet" href="style.css" />
 
-    <!-- inline mobile fixes moved to external stylesheet -->
+    <!-- inline mobile fixes -->
+    <style>
+      html, body { overflow-x: hidden; }
+      iframe, img { max-width: 100%; height: auto; display: block; }
+    </style>
 
     <!-- Solana libraries (deferred) -->
     <script
       src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
       defer
     ></script>
+    <!-- patched SPL-Token URL to jsDelivr v0.2.0 -->
     <script
-      src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"
+      src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.2.0/lib/index.iife.min.js"
       defer
     ></script>
   </head>

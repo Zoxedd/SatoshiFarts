@@ -1,7 +1,7 @@
 // api/nonce.js
-import crypto from 'crypto';
+const crypto = require('crypto');
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -9,10 +9,7 @@ export default function handler(req, res) {
     const nonce = crypto.randomBytes(16).toString('hex');
     return res.status(200).json({ nonce });
   } catch (e) {
-    console.error(e);
+    console.error('nonce error', e);
     return res.status(500).json({ error: 'Internal server error' });
   }
-}
-
-// Make the cache accessible to the other function
-export { nonces };
+};

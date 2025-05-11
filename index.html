@@ -26,9 +26,10 @@
       src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
       defer
     ></script>
-    <!-- Base58 encoder for browser -->
-    <script src="https://cdn.jsdelivr.net/npm/bs58@4/dist/index.min.js"></script>
+    <!-- Base58 encoder for browser (guaranteed UMD) -->
+    <script src="https://unpkg.com/bs58@4.0.1/dist/index.min.js"></script>
   </head>
+
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
     <div id="introOverlay" class="intro-container">
@@ -82,7 +83,7 @@
         ></iframe>
       </section>
 
-      <!-- Donate Section with mobile-friendly stacking -->
+      <!-- Donate Section -->
       <section
         id="donate"
         class="w-full max-w-full sm:max-w-screen-lg mx-auto mb-12 p-6 bg-black bg-opacity-50 rounded-xl text-center"
@@ -123,7 +124,7 @@
       </div>
     </footer>
 
-    <!-- UI scripts: mint button, copy address -->
+    <!-- Existing UI scripts -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
@@ -150,7 +151,7 @@
       });
     </script>
 
-    <!-- Holder verification script (with connect→sign order fixed) -->
+    <!-- Holder verification (connect → sign) -->
     <script defer>
       window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
@@ -158,12 +159,9 @@
         const tgLink    = document.getElementById('tg-invite-link');
         let provider;
 
-        // Safe disconnect on unload or visibility change
         async function safeDisconnect() {
           if (provider?.isConnected) {
-            try {
-              await provider.disconnect();
-            } catch {}
+            await provider.disconnect().catch(() => {});
           }
         }
         window.addEventListener('pagehide', safeDisconnect);
@@ -177,12 +175,11 @@
           verifyBtn.disabled    = true;
           verifyBtn.textContent = 'Signing…';
 
-          // 1️⃣ Fetch nonce
+          // 1) fetch nonce
           let nonce;
           try {
-            const r1    = await fetch('/api/nonce');
-            const j1    = await r1.json();
-            nonce       = j1.nonce;
+            const r1  = await fetch('/api/nonce');
+            nonce     = (await r1.json()).nonce;
           } catch (err) {
             alert('Failed to fetch nonce: ' + err.message);
             verifyBtn.disabled    = false;
@@ -190,7 +187,7 @@
             return;
           }
 
-          // 2️⃣ Detect wallet
+          // 2) detect wallet
           if (window.solana?.isPhantom) {
             provider = window.solana;
           } else if (window.solflare?.isSolflare) {
@@ -202,7 +199,7 @@
             return;
           }
 
-          // 3️⃣ Connect BEFORE signing
+          // 3) connect
           try {
             await provider.connect();
           } catch (err) {
@@ -212,14 +209,14 @@
             return;
           }
 
-          // 4️⃣ Sign the nonce
-          let signatureBase58;
+          // 4) sign
+          let signature;
           try {
-            const msg      = new TextEncoder().encode(nonce);
-            const signed   = await provider.signMessage(msg, 'utf8');
+            const msg     = new TextEncoder().encode(nonce);
+            const signed  = await provider.signMessage(msg, 'utf8');
             // Phantom returns { signature: Uint8Array }
             const sigBytes = signed.signature || signed;
-            signatureBase58 = bs58.encode(sigBytes);
+            signature      = bs58.encode(sigBytes);
           } catch (err) {
             alert('Failed to sign message: ' + err.message);
             verifyBtn.disabled    = false;
@@ -227,21 +224,21 @@
             return;
           }
 
-          // 5️⃣ POST to backend for on-chain token check
+          // 5) verify on backend
           verifyBtn.textContent = 'Verifying…';
-          let result;
+          let json;
           try {
-            const r2 = await fetch('/api/verify-holder', {
+            const r2   = await fetch('/api/verify-holder', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 publicKey: provider.publicKey.toString(),
-                signature: signatureBase58,
+                signature,
                 nonce
               })
             });
-            result = await r2.json();
-            if (!r2.ok) throw new Error(result.error || 'Verification failed');
+            json = await r2.json();
+            if (!r2.ok) throw new Error(json.error || 'Verification failed');
           } catch (err) {
             alert('Verification failed: ' + err.message);
             verifyBtn.disabled    = false;
@@ -249,8 +246,8 @@
             return;
           }
 
-          // 6️⃣ Success—reveal the private Telegram link
-          tgLink.href          = result.invite;
+          // 6) success
+          tgLink.href          = json.invite;
           tgDiv.style.display  = 'inline-block';
           verifyBtn.style.display = 'none';
         });

@@ -150,7 +150,7 @@
       });
     </script>
 
-    <!-- Holder verification script -->
+    <!-- Holder verification script (with connect→sign order fixed) -->
     <script defer>
       window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
@@ -158,15 +158,12 @@
         const tgLink    = document.getElementById('tg-invite-link');
         let provider;
 
-        // Safe disconnect on page unload or visibility change
+        // Safe disconnect on unload or visibility change
         async function safeDisconnect() {
           if (provider?.isConnected) {
             try {
               await provider.disconnect();
-              console.log('Wallet disconnected');
-            } catch (e) {
-              console.warn('Disconnect error', e);
-            }
+            } catch {}
           }
         }
         window.addEventListener('pagehide', safeDisconnect);
@@ -177,82 +174,84 @@
 
         verifyBtn.addEventListener('click', async (e) => {
           e.preventDefault();
-          verifyBtn.disabled   = true;
+          verifyBtn.disabled    = true;
           verifyBtn.textContent = 'Signing…';
 
-          // 1️⃣ Fetch a one-time nonce
+          // 1️⃣ Fetch nonce
           let nonce;
           try {
-            const res1  = await fetch('/api/nonce');
-            const data1 = await res1.json();
-            nonce       = data1.nonce;
+            const r1    = await fetch('/api/nonce');
+            const j1    = await r1.json();
+            nonce       = j1.nonce;
           } catch (err) {
             alert('Failed to fetch nonce: ' + err.message);
-            verifyBtn.disabled   = false;
+            verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
-          // 2️⃣ Detect wallet provider
+          // 2️⃣ Detect wallet
           if (window.solana?.isPhantom) {
             provider = window.solana;
           } else if (window.solflare?.isSolflare) {
             provider = window.solflare;
           } else {
-            alert('No supported Solana wallet found. Please install Phantom or Solflare.');
-            verifyBtn.disabled   = false;
+            alert('Please install Phantom or Solflare.');
+            verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
-          // 3️⃣ Connect to wallet
+          // 3️⃣ Connect BEFORE signing
           try {
             await provider.connect();
           } catch (err) {
             alert('Wallet connection failed: ' + err.message);
-            verifyBtn.disabled   = false;
+            verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
           // 4️⃣ Sign the nonce
-          let signature;
+          let signatureBase58;
           try {
-            const encoded = new TextEncoder().encode(nonce);
-            const signed  = await provider.signMessage(encoded, 'utf8');
-            signature      = bs58.encode(signed);
+            const msg      = new TextEncoder().encode(nonce);
+            const signed   = await provider.signMessage(msg, 'utf8');
+            // Phantom returns { signature: Uint8Array }
+            const sigBytes = signed.signature || signed;
+            signatureBase58 = bs58.encode(sigBytes);
           } catch (err) {
             alert('Failed to sign message: ' + err.message);
-            verifyBtn.disabled   = false;
+            verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
-          // 5️⃣ Send to backend for on-chain token check
+          // 5️⃣ POST to backend for on-chain token check
           verifyBtn.textContent = 'Verifying…';
           let result;
           try {
-            const res2 = await fetch('/api/verify-holder', {
+            const r2 = await fetch('/api/verify-holder', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 publicKey: provider.publicKey.toString(),
-                signature,
+                signature: signatureBase58,
                 nonce
               })
             });
-            result = await res2.json();
-            if (!res2.ok) throw new Error(result.error || 'Verification failed');
+            result = await r2.json();
+            if (!r2.ok) throw new Error(result.error || 'Verification failed');
           } catch (err) {
             alert('Verification failed: ' + err.message);
-            verifyBtn.disabled   = false;
+            verifyBtn.disabled    = false;
             verifyBtn.textContent = 'Verify Holder Access 🔑';
             return;
           }
 
-          // 6️⃣ Success: reveal the private Telegram link
-          tgLink.href         = result.invite;
-          tgDiv.style.display = 'inline-block';
+          // 6️⃣ Success—reveal the private Telegram link
+          tgLink.href          = result.invite;
+          tgDiv.style.display  = 'inline-block';
           verifyBtn.style.display = 'none';
         });
       });

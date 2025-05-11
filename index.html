@@ -26,11 +26,7 @@
       src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
       defer
     ></script>
-    <!-- patched SPL-Token URL to jsDelivr v0.2.0 -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.2.0/lib/index.iife.min.js"
-      defer
-    ></script>
+    <!-- remove spl-token import, we only need the program ID below -->
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
@@ -157,9 +153,14 @@
     <script defer>
       window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
-        const tgDiv     = document.getElementById('tg-holders-only');
-        const tgLink    = document.getElementById('tg-invite-link');
+        const tgDiv = document.getElementById('tg-holders-only');
+        const tgLink = document.getElementById('tg-invite-link');
         let provider;
+
+        // We hard-code the SPL Token Program ID
+        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey(
+          'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        );
 
         // Robust disconnect handler
         async function safeDisconnect() {
@@ -182,7 +183,7 @@
         // 1️⃣ Fetch nonce
         alert('Fetching nonce from backend…');
         fetch('/api/nonce')
-          .then(r => r.json())
+          .then((r) => r.json())
           .then(({ nonce }) => {
             alert('Received nonce: ' + nonce);
 
@@ -200,6 +201,12 @@
                 } else if (window.solflare?.isSolflare) {
                   provider = window.solflare;
                   alert('Solflare detected');
+                } else if (window.sollet?.isSollet) {
+                  provider = window.sollet;
+                  alert('Sollet detected');
+                } else if (window.backpack?.isBackpack) {
+                  provider = window.backpack;
+                  alert('Backpack detected');
                 } else {
                   throw new Error('No supported wallet');
                 }
@@ -211,16 +218,35 @@
                 if (!provider.publicKey) throw new Error('No publicKey');
                 alert('PublicKey: ' + provider.publicKey.toBase58());
 
+                // Fetch token accounts
+                alert('Fetching token accounts…');
+                const { value: accounts } = await new solanaWeb3
+                  .Connection(solanaWeb3.clusterApiUrl('mainnet-beta'))
+                  .getParsedTokenAccountsByOwner(provider.publicKey, {
+                    programId: TOKEN_PROGRAM_ID,
+                  });
+                console.log(accounts);
+
+                // Ensure they hold at least one
+                const hasToken = accounts.some(({ account }) => {
+                  const info = account.data.parsed.info;
+                  return (
+                    info.mint === 'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump' &&
+                    BigInt(info.tokenAmount.amount) > 0n
+                  );
+                });
+                if (!hasToken) throw new Error('No tokens held');
+
                 // Sign
                 alert('Signing nonce…');
                 const encoded = new TextEncoder().encode(nonce);
-                const signed  = await provider.signMessage(encoded, 'utf8');
+                const signed = await provider.signMessage(encoded, 'utf8');
                 alert('Message signed: ' + signed.length + ' bytes');
 
                 // Convert to base64
                 const sigArr = Array.from(new Uint8Array(signed))
-                                   .map(b => String.fromCharCode(b))
-                                   .join('');
+                  .map((b) => String.fromCharCode(b))
+                  .join('');
                 const signature = btoa(sigArr);
                 alert('Signature (base64): ' + signature);
 
@@ -230,12 +256,12 @@
                 // Send for on-chain verify
                 const res = await fetch('/api/verify-holder', {
                   method: 'POST',
-                  headers:{ 'Content-Type':'application/json' },
+                  headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     publicKey: provider.publicKey.toString(),
                     signature,
-                    nonce
-                  })
+                    nonce,
+                  }),
                 });
                 alert('Backend HTTP status: ' + res.status);
                 const data = await res.json();
@@ -244,7 +270,7 @@
 
                 // Success
                 alert('Verified! Unlocking TG link.');
-                tgLink.href         = data.inviteLink;
+                tgLink.href = data.inviteLink;
                 tgDiv.style.display = 'inline-block';
                 verifyBtn.style.display = 'none';
               } catch (err) {
@@ -255,7 +281,7 @@
               }
             });
           })
-          .catch(err => {
+          .catch((err) => {
             console.error('Nonce fetch error', err);
             alert('Failed to fetch nonce: ' + err.message);
           });

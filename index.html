@@ -21,12 +21,13 @@
       iframe, img { max-width: 100%; height: auto; display: block; }
     </style>
 
-    <!-- Solana libraries (deferred) -->
+    <!-- Solana library -->
     <script
       src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"
       defer
     ></script>
-    <!-- remove spl-token import, we only need the program ID below -->
+    <!-- Base58 encoder for browser -->
+    <script src="https://cdn.jsdelivr.net/npm/bs58@4/dist/index.min.js"></script>
   </head>
   <body class="flex flex-col items-center justify-center p-4 bg-black text-[#39ff14]">
     <!-- Intro overlay -->
@@ -122,7 +123,7 @@
       </div>
     </footer>
 
-    <!-- UI scripts -->
+    <!-- UI scripts: mint button, copy address -->
     <script>
       const intro = document.getElementById('introOverlay');
       const crawl = document.getElementById('crawlText');
@@ -149,23 +150,17 @@
       });
     </script>
 
-    <!-- verification scripts with robust disconnect & inline debugging -->
+    <!-- Holder verification script -->
     <script defer>
       window.addEventListener('load', () => {
         const verifyBtn = document.getElementById('verify-btn');
-        const tgDiv = document.getElementById('tg-holders-only');
-        const tgLink = document.getElementById('tg-invite-link');
+        const tgDiv     = document.getElementById('tg-holders-only');
+        const tgLink    = document.getElementById('tg-invite-link');
         let provider;
 
-        // We hard-code the SPL Token Program ID
-        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey(
-          'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-        );
-
-        // Robust disconnect handler
+        // Safe disconnect on page unload or visibility change
         async function safeDisconnect() {
           if (provider?.isConnected) {
-            alert('Disconnecting wallet…');
             try {
               await provider.disconnect();
               console.log('Wallet disconnected');
@@ -180,111 +175,86 @@
           if (document.visibilityState === 'hidden') safeDisconnect();
         });
 
-        // 1️⃣ Fetch nonce
-        alert('Fetching nonce from backend…');
-        fetch('/api/nonce')
-          .then((r) => r.json())
-          .then(({ nonce }) => {
-            alert('Received nonce: ' + nonce);
+        verifyBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          verifyBtn.disabled   = true;
+          verifyBtn.textContent = 'Signing…';
 
-            verifyBtn.addEventListener('click', async (e) => {
-              e.preventDefault();
-              verifyBtn.disabled = true;
-              verifyBtn.textContent = 'Signing…';
-              alert('Starting verification…');
-
-              try {
-                // Detect wallet
-                if (window.solana?.isPhantom) {
-                  provider = window.solana;
-                  alert('Phantom detected');
-                } else if (window.solflare?.isSolflare) {
-                  provider = window.solflare;
-                  alert('Solflare detected');
-                } else if (window.sollet?.isSollet) {
-                  provider = window.sollet;
-                  alert('Sollet detected');
-                } else if (window.backpack?.isBackpack) {
-                  provider = window.backpack;
-                  alert('Backpack detected');
-                } else {
-                  throw new Error('No supported wallet');
-                }
-
-                // Connect
-                alert('Connecting wallet…');
-                const resp = await provider.connect();
-                alert('connect() returned: ' + JSON.stringify(resp));
-                if (!provider.publicKey) throw new Error('No publicKey');
-                alert('PublicKey: ' + provider.publicKey.toBase58());
-
-                // Fetch token accounts
-                alert('Fetching token accounts…');
-                const { value: accounts } = await new solanaWeb3
-                  .Connection(solanaWeb3.clusterApiUrl('mainnet-beta'))
-                  .getParsedTokenAccountsByOwner(provider.publicKey, {
-                    programId: TOKEN_PROGRAM_ID,
-                  });
-                console.log(accounts);
-
-                // Ensure they hold at least one
-                const hasToken = accounts.some(({ account }) => {
-                  const info = account.data.parsed.info;
-                  return (
-                    info.mint === 'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump' &&
-                    BigInt(info.tokenAmount.amount) > 0n
-                  );
-                });
-                if (!hasToken) throw new Error('No tokens held');
-
-                // Sign
-                alert('Signing nonce…');
-                const encoded = new TextEncoder().encode(nonce);
-                const signed = await provider.signMessage(encoded, 'utf8');
-                alert('Message signed: ' + signed.length + ' bytes');
-
-                // Convert to base64
-                const sigArr = Array.from(new Uint8Array(signed))
-                  .map((b) => String.fromCharCode(b))
-                  .join('');
-                const signature = btoa(sigArr);
-                alert('Signature (base64): ' + signature);
-
-                verifyBtn.textContent = 'Verifying…';
-                alert('Sending to backend…');
-
-                // Send for on-chain verify
-                const res = await fetch('/api/verify-holder', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    publicKey: provider.publicKey.toString(),
-                    signature,
-                    nonce,
-                  }),
-                });
-                alert('Backend HTTP status: ' + res.status);
-                const data = await res.json();
-                alert('Backend response: ' + JSON.stringify(data));
-                if (!res.ok) throw new Error(data.error || 'Backend failed');
-
-                // Success
-                alert('Verified! Unlocking TG link.');
-                tgLink.href = data.inviteLink;
-                tgDiv.style.display = 'inline-block';
-                verifyBtn.style.display = 'none';
-              } catch (err) {
-                console.error(err);
-                alert('Error: ' + err.message);
-                verifyBtn.disabled = false;
-                verifyBtn.textContent = 'Verify Holder Access 🔑';
-              }
-            });
-          })
-          .catch((err) => {
-            console.error('Nonce fetch error', err);
+          // 1️⃣ Fetch a one-time nonce
+          let nonce;
+          try {
+            const res1  = await fetch('/api/nonce');
+            const data1 = await res1.json();
+            nonce       = data1.nonce;
+          } catch (err) {
             alert('Failed to fetch nonce: ' + err.message);
-          });
+            verifyBtn.disabled   = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
+            return;
+          }
+
+          // 2️⃣ Detect wallet provider
+          if (window.solana?.isPhantom) {
+            provider = window.solana;
+          } else if (window.solflare?.isSolflare) {
+            provider = window.solflare;
+          } else {
+            alert('No supported Solana wallet found. Please install Phantom or Solflare.');
+            verifyBtn.disabled   = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
+            return;
+          }
+
+          // 3️⃣ Connect to wallet
+          try {
+            await provider.connect();
+          } catch (err) {
+            alert('Wallet connection failed: ' + err.message);
+            verifyBtn.disabled   = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
+            return;
+          }
+
+          // 4️⃣ Sign the nonce
+          let signature;
+          try {
+            const encoded = new TextEncoder().encode(nonce);
+            const signed  = await provider.signMessage(encoded, 'utf8');
+            signature      = bs58.encode(signed);
+          } catch (err) {
+            alert('Failed to sign message: ' + err.message);
+            verifyBtn.disabled   = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
+            return;
+          }
+
+          // 5️⃣ Send to backend for on-chain token check
+          verifyBtn.textContent = 'Verifying…';
+          let result;
+          try {
+            const res2 = await fetch('/api/verify-holder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                publicKey: provider.publicKey.toString(),
+                signature,
+                nonce
+              })
+            });
+            result = await res2.json();
+            if (!res2.ok) throw new Error(result.error || 'Verification failed');
+          } catch (err) {
+            alert('Verification failed: ' + err.message);
+            verifyBtn.disabled   = false;
+            verifyBtn.textContent = 'Verify Holder Access 🔑';
+            return;
+          }
+
+          // 6️⃣ Success: reveal the private Telegram link
+          tgLink.href         = result.invite;
+          tgDiv.style.display = 'inline-block';
+          verifyBtn.style.display = 'none';
+        });
       });
     </script>
   </body>

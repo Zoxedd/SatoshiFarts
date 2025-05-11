@@ -19,6 +19,27 @@
     <style>
       html, body { overflow-x: hidden; }
       iframe, img { max-width: 100%; height: auto; display: block; }
+      /* Prevent horizontal overflow */
+      html, body {
+        overflow-x: hidden; /* Disable horizontal scrolling */
+      }
+
+      /* Ensure all elements fit within the viewport */
+      * {
+        box-sizing: border-box; /* Include padding and border in element width/height */
+      }
+
+      /* Fix for wide elements */
+      .container, .w-full, .max-w-full, .sm\:max-w-screen-lg {
+        max-width: 100%; /* Ensure elements don't exceed the viewport width */
+        overflow: hidden; /* Prevent content from overflowing */
+      }
+
+      /* Fix for images and iframes */
+      img, iframe {
+        max-width: 100%; /* Ensure images and iframes scale within the viewport */
+        height: auto; /* Maintain aspect ratio */
+      }
     </style>
 
     <!-- Solana library (IIFE) -->

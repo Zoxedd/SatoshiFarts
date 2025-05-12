@@ -1,58 +1,81 @@
-import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import nacl from 'tweetnacl';
-import { nonces } from './nonce.js';
+// pages/api/verify-holder.js
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+const { Connection, PublicKey, clusterApiUrl } = require('@solana/web3.js');
+const nacl                                 = require('tweetnacl');
+const bs58                                 = require('bs58');
+const { nonces }                           = require('./nonce');
+
+const TOKEN_PROGRAM_ID = new PublicKey(
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+);
+const TOKEN_MINT = 'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump';
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).end();
+    return;
+  }
 
   try {
-    const { publicKey: pk, signature: sigB64, nonce } = req.body;
-    if (!pk || !sigB64 || !nonce) {
+    const { publicKey, signature, nonce } = req.body;
+    console.log('📥 Payload:', { publicKey, signature: signature?.slice(0,8)+'…', nonce });
+
+    // Basic sanity
+    if (!publicKey || !signature || !nonce) {
+      console.warn('Missing fields');
       return res.status(400).json({ error: 'Missing fields' });
     }
 
-    // 1️⃣ Validate nonce
+    // 1) nonce check
     if (!nonces.has(nonce)) {
+      console.warn('Bad nonce:', nonce);
       return res.status(401).json({ error: 'Bad nonce' });
     }
     nonces.delete(nonce);
 
-    // 2️⃣ Verify signature using tweetnacl
-    const key = new PublicKey(pk);
-    const msg = Buffer.from(nonce, 'utf8');
-    const sig = Buffer.from(sigB64, 'base64');
-    const isValid = nacl.sign.detached.verify(
-      msg,
-      sig,
-      key.toBytes()
+    // 2) verify signature
+    const pk       = new PublicKey(publicKey);
+    const msgBytes = Buffer.from(nonce, 'utf8');
+    const sigBytes = Buffer.from(signature, 'base64');
+    const ok       = nacl.sign.detached.verify(
+      msgBytes,
+      sigBytes,
+      pk.toBuffer()
     );
-    if (!isValid) {
+    console.log('Signature valid?', ok);
+    if (!ok) {
+      console.warn('Invalid signature');
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    // 3️⃣ Check token balance
+    // 3) fetch token accounts (filter by program, then check mint)
     const conn = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
-    const resp = await conn.getParsedTokenAccountsByOwner(key, {
-      programId: TOKEN_PROGRAM_ID,
-    });
-    const hasToken = resp.value.some(({ account }) => {
-      const info = account.data.parsed.info;
+    const resp = await conn.getParsedTokenAccountsByOwner(
+      pk,
+      { programId: TOKEN_PROGRAM_ID }
+    );
+    console.log('Token accounts fetched:', resp.value.length);
+
+    const hasToken = resp.value.some(({ account: { data: { parsed: { info } } } }) => {
       return (
-        info.mint === 'FyWVxZidhhoWPTNjPLr1K5KeU7APFZdKutxP87Enpump' &&
+        info.mint === TOKEN_MINT &&
         BigInt(info.tokenAmount.amount) > 0n
       );
     });
+    console.log('Holder has token?', hasToken);
+
     if (!hasToken) {
+      console.warn('No tokens held for mint', TOKEN_MINT);
       return res.status(403).json({ error: 'No tokens held' });
     }
 
-    // 4️⃣ Success!
+    // 4) success
     return res.status(200).json({
-      inviteLink: 'https://t.me/+OK3C9ZPdY3RiYjcx',
+      inviteLink: 'https://t.me/+OK3C9ZPdY3RiYjcx'
     });
-  } catch (e) {
-    console.error('❌ verify-holder error:', e);
+
+  } catch (err) {
+    console.error('🔥 verify-holder error:', err);
     return res.status(500).json({ error: 'Server error' });
   }
-}
+};

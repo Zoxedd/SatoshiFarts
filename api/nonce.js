@@ -1,15 +1,19 @@
-// api/nonce.js
+// pages/api/nonce.js
 const crypto = require('crypto');
+const LRU    = require('quick-lru');
 
-module.exports = function handler(req, res) {
+// 5-minute LRU cache
+const nonces = new LRU({ maxAge: 1000 * 60 * 5 });
+
+module.exports = (req, res) => {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).end();
+    return;
   }
-  try {
-    const nonce = crypto.randomBytes(16).toString('hex');
-    return res.status(200).json({ nonce });
-  } catch (e) {
-    console.error('nonce error', e);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
+  const nonce = crypto.randomBytes(16).toString('hex');
+  nonces.set(nonce, true);
+  res.status(200).json({ nonce });
 };
+
+// expose the same cache for verify-holder
+module.exports.nonces = nonces;

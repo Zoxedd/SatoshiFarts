@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Satoshi's Fart</title>
+
+    <!-- Base58 encoder for signing -->
+    <script src="https://cdn.jsdelivr.net/npm/bs58/dist/index.min.js"></script>
+
     <!-- Tailwind & custom CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
@@ -18,27 +22,10 @@
     <!-- inline mobile fixes -->
     <style>
       html, body { overflow-x: hidden; }
+      *, *::before, *::after { box-sizing: border-box; }
       iframe, img { max-width: 100%; height: auto; display: block; }
-      /* Prevent horizontal overflow */
-      html, body {
-        overflow-x: hidden; /* Disable horizontal scrolling */
-      }
-
-      /* Ensure all elements fit within the viewport */
-      * {
-        box-sizing: border-box; /* Include padding and border in element width/height */
-      }
-
-      /* Fix for wide elements */
       .container, .w-full, .max-w-full, .sm\:max-w-screen-lg {
-        max-width: 100%; /* Ensure elements don't exceed the viewport width */
-        overflow: hidden; /* Prevent content from overflowing */
-      }
-
-      /* Fix for images and iframes */
-      img, iframe {
-        max-width: 100%; /* Ensure images and iframes scale within the viewport */
-        height: auto; /* Maintain aspect ratio */
+        max-width: 100%; overflow: hidden;
       }
     </style>
 
@@ -209,7 +196,7 @@
           }
 
           // 2️⃣ Detect wallet
-          if (window.solana?.isPhantom)       provider = window.solana;
+          if (window.solana?.isPhantom)        provider = window.solana;
           else if (window.solflare?.isSolflare) provider = window.solflare;
           else {
             alert('No Phantom or Solflare wallet found.');
@@ -229,14 +216,12 @@
             return;
           }
 
-          // 4️⃣ Sign the nonce & base-64 encode
+          // 4️⃣ Sign the nonce & base64-encode
           let signature;
           try {
             const encoded = new TextEncoder().encode(nonce);
             const signed  = await provider.signMessage(encoded, 'utf8');
-            // Some wallets return { signature: Uint8Array }
             const sigBytes = signed.signature || signed;
-            // convert Uint8Array → binary string → base64
             const sigStr   = Array.from(sigBytes)
                                   .map(b => String.fromCharCode(b))
                                   .join('');
@@ -253,7 +238,7 @@
           verifyBtn.textContent = 'Verifying…';
           let result;
           try {
-            const r2   = await fetch('/api/verify-holder', {
+            const r2 = await fetch('/api/verify-holder', {
               method: 'POST',
               headers:{ 'Content-Type':'application/json' },
               body: JSON.stringify({
@@ -273,8 +258,8 @@
           }
 
           // 6️⃣ Success: reveal your private TG link
-          tgLink.href         = result.inviteLink || result.invite;
-          tgDiv.style.display = 'inline-block';
+          tgLink.href            = result.inviteLink || result.invite;
+          tgDiv.style.display    = 'inline-block';
           verifyBtn.style.display = 'none';
         });
       });

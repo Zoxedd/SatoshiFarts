@@ -27,6 +27,8 @@
       .container, .w-full, .max-w-full, .sm\:max-w-screen-lg {
         max-width: 100%; overflow: hidden;
       }
+      /* wrap really long strings in <code> so they don't overflow */
+      code { word-break: break-all; }
     </style>
 
     <!-- Solana library (IIFE) -->
@@ -97,7 +99,7 @@
         <h2 class="text-2xl mb-4">🚀 Support Our Marketing</h2>
         <code
           id="donationAddr"
-          class="font-mono bg-gray-900 px-4 py-2 rounded text-green-300 block mb-6"
+          class="font-mono break-all bg-gray-900 px-4 py-2 rounded text-green-300 block mb-6"
         >
           9G7UoQ4vZSmXGiTwJ25oMf6yxrk2HRfJCqXAp8YJSMzq
         </code>
